@@ -38,6 +38,7 @@ Grew out of the LH Audio Editor v1 (spectral-score PR #2, not merged).
   (`keyDown` / `keyUp`, `kbNote` now returns a handle with `release()`); **5 notes up & down** is the v1 behaviour.
   Add more patterns as `{ id, name, steps: [semitones…] }`. Tempo is disabled in Note mode. Dock is now two rows
   (controls, then keys); key width fits the space (`buildKeys`, rebuilt on resize).
+- The keyboard dock has no title or description text (user: not needed).
 - Opening a recording sets the waveform and the lesson together (a tap in between could hit an empty lesson).
 - Tested headless: Note hold/release, pattern, backup (captured share files), restore into an empty app (2 regions,
   note and day list back), no errors.
