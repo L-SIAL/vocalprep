@@ -33,7 +33,7 @@ Grew out of the LH Audio Editor v1 (spectral-score PR #2, not merged).
   Last backup date in localStorage vpLastBackup, shown in the menu. **Restore from a backup…**: a multi-file picker
   (#restoreIn); takes the newest .json, matches WAVs by file name, adds regions that aren't here (keeps existing
   ones as they are) and merges the day lists. `backup()`, `restore()`; `shareFiles` now returns true when shared.
-- **Keyboard:** range E2–C4 (`KB_LO` 40, was A2). What a key plays is a pattern (`PATTERNS`, segmented buttons
+- **Keyboard:** range E2–G4 (`KB_LO` 40, `KB_HI` 67; v1 was A2–C4), finer keys (white max 34 px wide, 112 px tall; black 70 px). What a key plays is a pattern (`PATTERNS`, segmented buttons
   in the dock, localStorage vpPattern): **Note** (default) sounds while the key is held and the dampers drop on release
   (`keyDown` / `keyUp`, `kbNote` now returns a handle with `release()`); **5 notes up & down** is the v1 behaviour.
   Add more patterns as `{ id, name, steps: [semitones…] }`. Tempo is disabled in Note mode. Dock is now two rows
