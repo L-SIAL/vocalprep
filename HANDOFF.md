@@ -33,7 +33,7 @@ Grew out of the LH Audio Editor v1 (spectral-score PR #2, not merged).
   Last backup date in localStorage vpLastBackup, shown in the menu. **Restore from a backup…**: a multi-file picker
   (#restoreIn); takes the newest .json, matches WAVs by file name, adds regions that aren't here (keeps existing
   ones as they are) and merges the day lists. `backup()`, `restore()`; `shareFiles` now returns true when shared.
-- **Keyboard:** range E2–G4 (`KB_LO` 40, `KB_HI` 67; v1 was A2–C4), finer keys (white max 34 px wide, 112 px tall; black 70 px). What a key plays is a pattern (`PATTERNS`, segmented buttons
+- **Keyboard:** range E2–C4 (`KB_LO` 40, was A2). What a key plays is a pattern (`PATTERNS`, segmented buttons
   in the dock, localStorage vpPattern): **Note** (default) sounds while the key is held and the dampers drop on release
   (`keyDown` / `keyUp`, `kbNote` now returns a handle with `release()`); **5 notes up & down** is the v1 behaviour.
   Add more patterns as `{ id, name, steps: [semitones…] }`. Tempo is disabled in Note mode. Dock is now two rows
@@ -42,3 +42,12 @@ Grew out of the LH Audio Editor v1 (spectral-score PR #2, not merged).
 - Opening a recording sets the waveform and the lesson together (a tap in between could hit an empty lesson).
 - Tested headless: Note hold/release, pattern, backup (captured share files), restore into an empty app (2 regions,
   note and day list back), no errors.
+
+## v3 (11 Nov 2026)
+- Keyboard E2–G4 (`KB_HI` 67) with finer keys (white at most 34 px wide and 112 px tall, black 70 px, thinner edges).
+  (This was pushed to the v2 branch after v2 had been merged, so it ships here.)
+- **Sound recovery** (as in the Spectral Palette v72/v77): `watchAudio(retry)` runs after every play (`startPlay`) and
+  key (`keyDown`, `kbPattern`). If the audio clock hasn't moved 0.15 s after 0.9 s, `rebuildAudio()` closes the
+  AudioContext and clears the keyboard bus; the play or key is retried once on a new context, with a toast. Decoded
+  region buffers are reused (AudioBuffers aren't tied to a context). The context is also resumed on visibilitychange
+  (visible) and pageshow. `ensureAC` rebuilds a closed context. List play now passes `list: true` to `startPlay`.
