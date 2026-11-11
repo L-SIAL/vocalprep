@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="VocalPrep">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f2ede2">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>VocalPrep</title>
+<style>
+:root {
+  --bg: #F2EDE2; --panel: #FBF8F2; --card: #FFFFFF; --ink: #1E1D1B; --ink2: #3D3A36; --muted: #6B665F;
+  --faint: #9A958D; --line: #D9D0C1; --line2: #E4DCCD; --talk: #B3ADA3;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.3 -apple-system, system-ui, sans-serif; overscroll-behavior: none;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+input, textarea, select { font: 16px/1.35 -apple-system, system-ui, sans-serif; color: var(--ink); -webkit-user-select: text; user-select: text; }
+#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+button { min-height: 44px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card);
+  color: var(--ink); font: 15px -apple-system, system-ui, sans-serif; white-space: nowrap; cursor: pointer; touch-action: manipulation; }
+button:disabled { opacity: .4; }
+button.on, button.strong { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+button.strong { font-weight: 600; }
+button.small { min-height: 36px; padding: 0 10px; font-size: 14px; }
+.grp { display: inline-flex; }
+.grp button { border-radius: 0; margin-left: -1px; }
+.grp button:first-child { border-radius: 8px 0 0 8px; margin-left: 0; }
+.grp button:last-child { border-radius: 0 8px 8px 0; }
+#top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 12px; background: var(--panel); border-bottom: 1px solid var(--line); }
+#top .title { font-weight: 700; font-size: 17px; }
+#time { font: 600 18px ui-monospace, Menlo, monospace; min-width: 6.2em; text-align: center; }
+.sp { flex: 1 1 0; }
+.muted { color: var(--muted); }
+#body { flex: 1 1 auto; display: flex; min-height: 0; }
+#mainCol { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
+#side { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; background: var(--panel); border-left: 1px solid var(--line); min-height: 0; }
+@media (max-width: 900px) { #side { width: 290px; } }
+
+/* stage 1 */
+#capture { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+#over { height: 44px; display: block; width: 100%; touch-action: none; border-bottom: 1px solid var(--line); }
+#cvwrap { position: relative; flex: 1 1 auto; min-height: 160px; }
+#cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+#secbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 12px; background: var(--panel); border-top: 1px solid var(--line); min-height: 61px; }
+#marks { height: 30vh; display: flex; flex-direction: column; background: var(--card); border-top: 1px solid var(--line); }
+.phead { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid #EEE6DA; }
+.phead b { font-size: 15px; }
+.scroll { flex: 1 1 auto; overflow: auto; -webkit-overflow-scrolling: touch; }
+.mk { display: flex; gap: 10px; align-items: center; padding: 6px 12px; border-bottom: 1px solid #EEE6DA; }
+.mk.cur { background: #F4EFE5; }
+.mk .n { font-weight: 700; color: var(--ink2); min-width: 1.6em; text-align: right; }
+.mk .t { font: 14px ui-monospace, Menlo, monospace; }
+.mk input { flex: 1 1 auto; min-width: 6em; min-height: 40px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.empty { color: var(--muted); padding: 14px 12px; line-height: 1.4; }
+
+/* stage 2 */
+#practise { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+#dayhead { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 16px 8px; }
+#dayhead h1 { margin: 0; font-size: 22px; }
+.chip { min-height: 36px; padding: 0 12px; border-radius: 18px; font-size: 14px; }
+#list { flex: 1 1 auto; overflow: auto; -webkit-overflow-scrolling: touch; padding: 0 14px 14px; position: relative; }
+.row { display: flex; gap: 12px; align-items: stretch; background: var(--card); border: 1px solid var(--line2); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+.row.playing { border: 2px solid var(--ink); padding: 9px 11px; }
+.rcol { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 44px; flex-shrink: 0; }
+.grip { color: var(--faint); font-size: 18px; letter-spacing: -3px; padding: 4px 8px; touch-action: none; cursor: grab; }
+.num { color: var(--muted); font-weight: 700; font-size: 13px; }
+.rmid { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.rmid .nm { font-weight: 700; font-size: 16px; border: 1px solid transparent; border-radius: 6px; padding: 2px 4px; margin: -3px -5px; background: transparent; min-height: 30px; }
+.rmid .nm:focus { border-color: var(--line); background: #fff; }
+.rmid canvas { width: 100%; height: 46px; display: block; border-radius: 6px; touch-action: none; }
+.rbtns { display: flex; gap: 6px; flex-wrap: wrap; }
+.note { flex: 1 1 auto; min-width: 0; min-height: 96px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; resize: none; }
+.drop { border: 2px dashed var(--ink2); border-radius: 12px; min-height: 56px; display: flex; align-items: center; justify-content: center; color: var(--ink2); background: rgba(0,0,0,.03); font-weight: 600; text-align: center; padding: 8px; }
+#insLine { position: absolute; left: 14px; right: 14px; height: 3px; background: var(--ink); border-radius: 2px; pointer-events: none; }
+.ghost { position: fixed; z-index: 80; pointer-events: none; background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 10px; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,.3); transform: translate(-30px, -50%); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* repository */
+#side .phead { border-bottom: none; padding-bottom: 4px; }
+#repoSearch { margin: 0 12px 8px; min-height: 40px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.rh { padding: 10px 16px 6px; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--muted); text-transform: uppercase; }
+.ri { margin: 0 10px 6px; padding: 8px 8px 8px 4px; border-radius: 10px; background: var(--card); border: 1px solid var(--line2); display: flex; align-items: center; gap: 6px; }
+.ri.today { background: #EFEAE0; }
+.ri .txt { flex: 1 1 auto; min-width: 0; }
+.ri .txt b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ri .txt span { color: var(--muted); font-size: 13px; }
+.ri button { min-height: 40px; min-width: 40px; padding: 0 8px; }
+.sidefoot { padding: 10px; border-top: 1px solid var(--line); display: flex; gap: 8px; }
+.sidefoot button { flex: 1 1 auto; }
+
+/* keyboard dock */
+#kbd { display: flex; align-items: center; gap: 18px; padding: 12px 16px; background: var(--panel); border-top: 1px solid var(--line); flex-wrap: wrap; }
+#kbd[hidden] { display: none; }
+#keys { position: relative; height: 150px; flex-shrink: 0; }
+#keys .w { position: absolute; top: 0; width: 44px; height: 150px; border: 1px solid var(--faint); border-radius: 0 0 8px 8px; background: #fff; padding: 0; min-height: 0; touch-action: none; }
+#keys .b { position: absolute; top: 0; width: 26px; height: 92px; border: 1px solid #000; border-radius: 0 0 6px 6px; background: var(--ink); padding: 0; min-height: 0; z-index: 2; touch-action: none; }
+.kctl { display: flex; flex-direction: column; gap: 10px; flex: 1 1 170px; min-width: 170px; }
+.kctl label { font-weight: 600; display: flex; justify-content: space-between; }
+input[type=range] { width: 100%; height: 32px; accent-color: #1E1D1B; }
+
+/* overlays */
+.ver { position: fixed; left: calc(4px + env(safe-area-inset-left)); bottom: calc(2px + env(safe-area-inset-bottom)); font-size: 11px; color: var(--muted); pointer-events: none; z-index: 5; }
+.ov { position: fixed; inset: 0; background: rgba(30,29,27,.35); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+.ov[hidden] { display: none; }
+.card { background: var(--panel); border-radius: 14px; padding: 18px; width: min(580px, 100%); max-height: 90vh; overflow: auto; box-shadow: 0 8px 30px rgba(0,0,0,.25); }
+.card h2 { margin: 0 0 10px; font-size: 20px; }
+.card p { margin: 6px 0 12px; line-height: 1.4; }
+.card .btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 12px; }
+.card ol { padding-left: 1.3em; line-height: 1.4; } .card li { margin: 4px 0; }
+.card input.full { width: 100%; min-height: 44px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.les { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.les .txt { flex: 1 1 200px; min-width: 0; }
+.les .txt b { display: block; }
+.les .txt span { color: var(--muted); font-size: 13px; }
+.filebtn { position: relative; overflow: hidden; display: inline-flex; }
+.filebtn input { position: absolute; inset: 0; opacity: 0; font-size: 100px; cursor: pointer; }
+.menu { position: fixed; z-index: 70; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.2); padding: 6px; display: flex; flex-direction: column; gap: 4px; min-width: 220px; }
+.menu button { text-align: left; border: none; background: transparent; }
+.menu button:active { background: #EFEAE0; }
+#toast { position: fixed; left: 50%; bottom: calc(70px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: var(--bg);
+  padding: 10px 14px; border-radius: 10px; z-index: 90; max-width: calc(100vw - 32px); box-shadow: 0 4px 18px rgba(0,0,0,.25); }
+#toast[hidden] { display: none; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top">
+    <span class="title">VocalPrep</span>
+    <span class="grp"><button id="sCap" class="on">1 Capture</button><button id="sPra">2 Practise</button></span>
+    <span id="topCap" style="display:contents">
+      <button id="bLessons">Lessons…</button>
+      <button id="bPlay" class="strong">▶ Play</button>
+      <button id="bLoop">⟲ Loop</button>
+      <span id="time">0:00.00</span>
+      <button id="bMark">+ Marker</button>
+      <span class="sp"></span>
+      <span class="grp"><button id="zOut" aria-label="Zoom out">−</button><button id="zFit">Fit</button><button id="zIn" aria-label="Zoom in">+</button></span>
+    </span>
+    <span id="topPra" style="display:none">
+      <span class="sp"></span>
+      <button id="bPlayList" class="strong">▶ Play the list</button>
+      <button id="bExport">Export ▾</button>
+    </span>
+    <span class="sp" id="topSp2" style="display:none"></span>
+    <button id="bKbd">Keyboard</button>
+    <button id="bHelp" aria-label="Help">?</button>
+  </div>
+  <div id="body">
+    <div id="mainCol">
+      <div id="capture">
+        <canvas id="over" aria-label="The whole recording: tap or drag to go there"></canvas>
+        <div id="cvwrap"><canvas id="cv"></canvas></div>
+        <div id="secbar"></div>
+        <div id="marks">
+          <div class="phead"><b id="mkTitle">Markers</b><span class="sp"></span>
+            <button class="small" id="mkCopy">Copy as text</button><button class="small" id="mkShare">Share as text</button></div>
+          <div class="scroll" id="mkList"></div>
+        </div>
+      </div>
+      <div id="practise" hidden>
+        <div id="dayhead"></div>
+        <div id="list"></div>
+      </div>
+      <div id="kbd" hidden>
+        <div style="display:flex;flex-direction:column;gap:6px;width:150px">
+          <b>Pitch keyboard</b>
+          <span class="muted" style="font-size:13px;line-height:1.35">Touch a key: the note, then the major scale up to the fifth and back down.</span>
+          <span style="display:flex;gap:6px"><button class="small" id="kReplay">Replay</button><button class="small" id="kStop">Stop</button></span>
+        </div>
+        <div id="keys"></div>
+        <div class="kctl">
+          <div><label for="kTempo"><span>Tempo</span><span id="kTempoV">80 bpm</span></label><input id="kTempo" type="range" min="40" max="160" step="1" value="80"></div>
+          <div><label for="kVol"><span>Volume</span><span id="kVolV">70 %</span></label><input id="kVol" type="range" min="0" max="100" step="1" value="70"></div>
+        </div>
+      </div>
+    </div>
+    <div id="side">
+      <div class="phead"><b style="font-size:17px">Repository</b><span class="muted" id="repoCount"></span></div>
+      <input id="repoSearch" placeholder="Search names and notes" aria-label="Search the repository">
+      <div class="scroll" id="repo"></div>
+      <div class="sidefoot" id="sideFoot"></div>
+    </div>
+  </div>
+</div>
+<span class="ver">v1</span>
+
+<div class="ov" id="ovLessons" hidden><div class="card">
+  <h2>Lessons</h2>
+  <p>Open a lesson recording from Files (Dropbox, Downloads, On My iPad). The original file is never changed.</p>
+  <div class="btns" style="justify-content:flex-start;margin-top:0">
+    <label class="filebtn"><button class="strong" tabindex="-1">Open recording…</button><input id="fileIn" type="file" accept="audio/*,.m4a,.wav,.mp3,.aif,.aiff,.caf,.aac,.flac"></label>
+  </div>
+  <div id="lesList" style="margin-top:12px"></div>
+  <div class="btns"><button id="lesClose">Close</button></div>
+</div></div>
+
+<div class="ov" id="ovHelp" hidden><div class="card">
+  <h2>Help – VocalPrep</h2>
+  <p><b>1 Capture</b> — take regions out of a lesson recording.</p>
+  <ol>
+    <li><b>Lessons…</b> › <b>Open recording…</b> and pick the lesson (Dropbox, Downloads…).</li>
+    <li>▶ Play and tap <b>+ Marker</b> (or <b>M</b>) at each exercise, even while it plays. Type a note for each marker in the list below.</li>
+    <li>Drag across the waveform to choose a region, or double-tap between two markers. Drag the region's edges to adjust it.</li>
+    <li><b>Add to repository →</b>. It is named after its marker. Repeat for every exercise.</li>
+    <li><b>Finish lesson</b> removes the full recording from the app (your regions stay) and goes to Practise.</li>
+  </ol>
+  <p><b>2 Practise</b> — today's list.</p>
+  <ol>
+    <li>Drag regions from the Repository (by ⋮⋮) into the list, or tap <b>+</b>. Drag ⋮⋮ in the list to reorder.</li>
+    <li>Each region has one note that goes with it every day. Type in the box beside it.</li>
+    <li>In the small waveform, drag the thin handle to where the singing starts. Then <b>Instructions</b> plays the talking and <b>Sing along</b> starts at the singing. <b>⟲</b> loops.</li>
+    <li>The chips at the top show earlier days, so you can see what you used.</li>
+    <li><b>Export ▾</b> shares the regions (WAV) or your notes, e.g. to Notes or Files.</li>
+  </ol>
+  <p><b>Keyboard:</b> touch a key for the note, then the major scale up to the fifth and back down. Tempo and Volume beside it.</p>
+  <p>Pinch to zoom the lesson waveform, two fingers to scroll, or drag along the strip at the top. Keys: Space play/stop · M marker · L loop · Return add the region · Esc clear.</p>
+  <div class="btns"><button id="helpClose" class="strong">Close</button></div>
+</div></div>
+
+<div class="ov" id="ovAsk" hidden><div class="card"><p id="askMsg"></p><div id="askField"></div><div class="btns" id="askBtns"></div></div></div>
+<div class="ov" id="ovBusy" hidden><div class="card" style="width:auto"><p id="busyMsg" style="margin:0">Working…</p></div></div>
+<div id="toast" hidden></div>
+
+<script>
+'use strict';
+// v1 (11 Nov 2026): VocalPrep. Stage 1 Capture: a lesson recording, markers with notes, regions added to a
+// repository (each region keeps its own audio, so the full recording can be removed). Stage 2 Practise: a list per
+// day, built by dragging regions from the repository; each region has one note. Pitch keyboard dock.
+const $ = s => document.querySelector(s);
+const RULER = 30, FADE = 0.003, SNAP_PX = 10;
+const C = { bg: '#F2EDE2', panel: '#FBF8F2', ink: '#1E1D1B', ink2: '#3D3A36', muted: '#6B665F', faint: '#9A958D', line: '#D9D0C1', talk: '#B3ADA3', lane: '#ECE6DA', ruler: '#E9E2D4', mark: '#4A4744' };
+
+// ---------- small helpers
+const uid = () => Math.random().toString(36).slice(2, 10);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function lsGet(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { } }
+function fmt(t, dec = 2) { const p = 10 ** dec; let k = Math.round(Math.max(0, t) * p); const m = Math.floor(k / (60 * p)); k -= m * 60 * p; let s = (k / p).toFixed(dec); if (k < 10 * p) s = '0' + s; return m + ':' + s; }
+function fmtFile(t) { const k = Math.round(Math.max(0, t)); return Math.floor(k / 60) + 'm' + String(k % 60).padStart(2, '0') + 's'; }
+function safeName(s) { return (s || 'region').replace(/[\/\\:*?"<>|\u0000-\u001f]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 80) || 'region'; }
+function dayKey(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function dayDate(k) { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); }
+function dayLabel(k, long) { return dayDate(k).toLocaleDateString(undefined, long ? { weekday: 'short', day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short' }); }
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  for (const k in props || {}) { const v = props[k]; if (v == null) continue; if (k.startsWith('on')) el.addEventListener(k.slice(2), v); else if (k === 'class') el.className = v; else if (k in el && typeof v !== 'string' || k === 'value' || k === 'textContent' || k === 'disabled') el[k] = v; else el.setAttribute(k, v); }
+  for (const c of kids) if (c != null) el.append(c);
+  return el;
+}
+let toastT = 0;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3200); }
+function busy(msg) { $('#busyMsg').textContent = msg || ''; $('#ovBusy').hidden = !msg; }
+function ask(msg, labels, field) {    // labels[0] is the main button; field = initial text for a text box
+  return new Promise(res => {
+    $('#askMsg').textContent = msg; const b = $('#askBtns'), f = $('#askField'); b.textContent = ''; f.textContent = '';
+    let inp = null;
+    if (field != null) { inp = h('input', { class: 'full', value: field }); f.append(inp); inp.onkeydown = e => { if (e.key === 'Enter') { done(0); } }; }
+    const done = i => { $('#ovAsk').hidden = true; res(field != null ? { i, text: inp.value } : i); };
+    labels.forEach((l, i) => b.append(h('button', { class: i === 0 ? 'strong' : '', onclick: () => done(i) }, l)));
+    $('#ovAsk').hidden = false; if (inp) setTimeout(() => { inp.focus(); inp.select(); }, 50);
+  });
+}
+
+// ---------- IndexedDB: lessons, lessonFiles (the recording), regions, regionAudio (WAV), days
+let dbp = null;
+function db() {
+  if (!dbp) dbp = new Promise((res, rej) => {
+    const r = indexedDB.open('vocalprep', 1);
+    r.onupgradeneeded = () => { const d = r.result;
+      d.createObjectStore('lessons', { keyPath: 'id' }); d.createObjectStore('lessonFiles');
+      d.createObjectStore('regions', { keyPath: 'id' }); d.createObjectStore('regionAudio'); d.createObjectStore('days', { keyPath: 'day' }); };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+  return dbp;
+}
+async function dbDo(store, mode, fn) {
+  const d = await db();
+  return new Promise((res, rej) => { const tx = d.transaction(store, mode); const r = fn(tx.objectStore(store)); tx.oncomplete = () => res(r && r.result); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error); });
+}
+const dbPut = (s, v, k) => dbDo(s, 'readwrite', st => k === undefined ? st.put(JSON.parse(JSON.stringify(v))) : st.put(v, k));
+const dbGet = (s, k) => dbDo(s, 'readonly', st => st.get(k));
+const dbAll = s => dbDo(s, 'readonly', st => st.getAll());
+const dbDel = (s, k) => dbDo(s, 'readwrite', st => st.delete(k));
+const saveTimers = {};
+function saveSoon(store, obj, ms = 400) { const k = store + ':' + (obj.id || obj.day); clearTimeout(saveTimers[k]); saveTimers[k] = setTimeout(() => dbPut(store, obj).catch(() => toast('Could not save on this iPad (storage full?)')), ms); }
+
+// ---------- state
+let stage = lsGet('vpStage', 'capture');
+let lesson = null, audio = null;            // the open lesson and its decoded recording
+let regions = [];                            // every region in the repository
+const regionBlobs = new Map(), regionBufs = new Map();
+let days = {};                               // 'yyyy-mm-dd' -> {day, items:[regionId]}
+let viewDay = dayKey();
+let view = { t0: 0, pps: 50 }, cursor = 0, sel = null, curMarker = null, loopOn = false;
+let mkUndo = [];
+let needDraw = true;
+
+// ---------- lesson audio + peaks
+function setAudio(buf) {
+  const ch = buf.numberOfChannels, len = buf.length, data = [];
+  for (let c = 0; c < ch; c++) data.push(buf.getChannelData(c));
+  const B = 128, nb = Math.ceil(len / B), mn = new Float32Array(nb).fill(1), mx = new Float32Array(nb).fill(-1);
+  let peak = 0;
+  for (const d of data) for (let j = 0; j < nb; j++) {
+    let lo = mn[j], hi = mx[j]; const e = Math.min(len, (j + 1) * B);
+    for (let i = j * B; i < e; i++) { const v = d[i]; if (v < lo) lo = v; if (v > hi) hi = v; }
+    mn[j] = lo; mx[j] = hi; if (-lo > peak) peak = -lo; if (hi > peak) peak = hi;
+  }
+  const lv = [{ B, mn, mx }];
+  while (lv[lv.length - 1].mn.length > 8) {
+    const p = lv[lv.length - 1], n = Math.ceil(p.mn.length / 4), a = new Float32Array(n), b = new Float32Array(n);
+    for (let j = 0; j < n; j++) { let lo = 1, hi = -1; for (let k = j * 4; k < Math.min(p.mn.length, j * 4 + 4); k++) { if (p.mn[k] < lo) lo = p.mn[k]; if (p.mx[k] > hi) hi = p.mx[k]; } a[j] = lo; b[j] = hi; }
+    lv.push({ B: p.B * 4, mn: a, mx: b });
+  }
+  audio = { buf, sr: buf.sampleRate, ch, len, dur: len / buf.sampleRate, data, lv, peak: Math.max(peak, 1e-4) };
+}
+let MN = 0, MX = 0;
+function colMM(a, b) {
+  const spp = b - a; let mn = 1, mx = -1;
+  if (spp < audio.lv[0].B) {
+    const i0 = Math.max(0, Math.floor(a)), i1 = Math.min(audio.len - 1, Math.ceil(b));
+    for (const d of audio.data) for (let i = i0; i <= i1; i++) { const v = d[i]; if (v < mn) mn = v; if (v > mx) mx = v; }
+  } else {
+    let L = audio.lv[0]; for (const l of audio.lv) if (l.B <= spp) L = l;
+    const j0 = Math.max(0, Math.floor(a / L.B)), j1 = Math.min(L.mn.length, Math.ceil(b / L.B));
+    for (let j = j0; j < j1; j++) { if (L.mn[j] < mn) mn = L.mn[j]; if (L.mx[j] > mx) mx = L.mx[j]; }
+  }
+  if (mn > mx) mn = mx = 0;
+  MN = mn; MX = mx;
+}
+
+// ---------- stage 1 canvases
+const cv = $('#cv'), ctx = cv.getContext('2d'), ov = $('#over'), octx = ov.getContext('2d');
+let W = 300, H = 200, OW = 300, OH = 44, dpr = 1;
+function layout() {
+  dpr = window.devicePixelRatio || 1;
+  const r = cv.getBoundingClientRect(); W = Math.max(50, r.width); H = Math.max(80, r.height);
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  const o = ov.getBoundingClientRect(); OW = Math.max(50, o.width); OH = o.height || 44;
+  ov.width = Math.round(OW * dpr); ov.height = Math.round(OH * dpr);
+  clampView(); needDraw = true;
+}
+const dur = () => audio ? audio.dur : 0;
+const tAt = x => view.t0 + x / view.pps;
+const tx = t => (t - view.t0) * view.pps;
+function clampView() { const L = Math.max(dur(), 1); view.pps = clamp(view.pps, W / (L * 1.1), audio ? audio.sr / 2 : 20000); view.t0 = clamp(view.t0, 0, Math.max(0, dur() - W / view.pps * 0.5)); }
+function zoomAt(f, x) { const t = tAt(x); view.pps *= f; clampView(); view.t0 = t - x / view.pps; clampView(); needDraw = true; saveLessonView(); }
+function zoomBtn(f) { const p = playKey() === 'lesson' ? playPos().pos : cursor; let x = tx(p); if (x < 0 || x > W) x = W / 2; zoomAt(f, x); }
+function fit() { view.pps = W / Math.max(dur(), 1) / 1.02; view.t0 = 0; clampView(); needDraw = true; saveLessonView(); }
+function showT(t) { const vis = W / view.pps; if (t < view.t0 || t > view.t0 + vis) { view.t0 = t - vis * 0.2; clampView(); } }
+function saveLessonView() { if (lesson) { lesson.view = { t0: view.t0, pps: view.pps }; saveSoon('lessons', lesson, 800); } }
+function niceStep(pxMin) { for (const s of [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600]) if (s * view.pps >= pxMin) return s; return 3600; }
+const sortedMarkers = () => lesson ? lesson.markers.slice().sort((a, b) => a.t - b.t) : [];
+
+function draw() {
+  needDraw = false;
+  const g = ctx; g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.fillStyle = C.lane; g.fillRect(0, 0, W, H);
+  if (!audio) {
+    g.fillStyle = C.muted; g.font = '16px -apple-system, system-ui, sans-serif'; g.textAlign = 'center';
+    g.fillText(lesson && !lesson.hasAudio ? 'This lesson’s recording was removed. Its regions are in the repository.' : 'Tap Lessons… and Open recording… to start', W / 2, H / 2);
+    g.textAlign = 'left'; drawOver(); return;
+  }
+  const y0 = RULER, lh = H - RULER;
+  if (sel) { const a = tx(sel.a), b = tx(sel.b); g.fillStyle = 'rgba(0,0,0,.10)'; g.fillRect(a, y0, b - a, lh); }
+  // waveform
+  const sr = audio.sr, step = 1 / dpr, mid = y0 + lh / 2, amp = (lh / 2 - 6) / audio.peak, spx = sr * step / view.pps;
+  const xEnd = Math.min(W, tx(audio.dur));
+  g.fillStyle = C.ink2;
+  for (let x = Math.max(0, Math.floor(tx(0) * dpr) / dpr); x < xEnd; x += step) {
+    const a = tAt(x) * sr; colMM(a, a + spx);
+    let top = mid - MX * amp, bot = mid - MN * amp; if (bot - top < step) bot = top + step;
+    g.fillRect(x, top, step, bot - top);
+  }
+  if (xEnd < W) { g.fillStyle = 'rgba(0,0,0,.05)'; g.fillRect(Math.max(0, xEnd), y0, W, lh); }
+  if (sel) { g.fillStyle = C.ink; g.fillRect(tx(sel.a) - 1, y0, 2, lh); g.fillRect(tx(sel.b) - 1, y0, 2, lh); }
+  const ms = sortedMarkers();
+  for (const m of ms) { const x = tx(m.t); if (x < -2 || x > W + 2) continue; g.fillStyle = m.id === curMarker ? 'rgba(0,0,0,.75)' : 'rgba(0,0,0,.35)'; g.fillRect(x - .5, y0, 1, lh); }
+  // ruler
+  g.fillStyle = C.ruler; g.fillRect(0, 0, W, RULER);
+  if (sel) { g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(tx(sel.a), 0, tx(sel.b) - tx(sel.a), RULER); }
+  const st = niceStep(80), dec = st < 0.01 ? 3 : st < 0.1 ? 2 : st < 1 ? 1 : 0;
+  g.fillStyle = C.muted; g.font = '11px -apple-system, system-ui, sans-serif';
+  const tEnd = tAt(W);
+  for (let k = Math.max(0, Math.floor(view.t0 / st * 2)); k / 2 * st <= tEnd; k++) {
+    const t = k / 2 * st, x = tx(t);
+    if (k % 2 === 0) { g.fillRect(x, RULER - 10, 1, 10); g.fillText(fmt(t, dec), x + 3, RULER - 12); } else g.fillRect(x, RULER - 5, 1, 5);
+  }
+  g.fillStyle = C.line; g.fillRect(0, RULER - 1, W, 1);
+  g.font = '12px -apple-system, system-ui, sans-serif';
+  ms.forEach((m, i) => {
+    const x = tx(m.t), nx = i + 1 < ms.length ? tx(ms[i + 1].t) : W + 200; if (x > W || nx < 0) return;
+    const label = (i + 1) + (m.note ? ' ' + m.note : ''), w = Math.min(g.measureText(label).width + 8, Math.max(18, nx - x - 2));
+    g.fillStyle = m.id === curMarker ? C.ink : C.mark; g.fillRect(x, 2, w, 16);
+    g.save(); g.beginPath(); g.rect(x, 2, w, 16); g.clip(); g.fillStyle = C.bg; g.fillText(label, x + 4, 14); g.restore();
+  });
+  let x = tx(cursor); g.fillStyle = C.ink; for (let y = 0; y < H; y += 6) g.fillRect(x - .5, y, 1.5, 3);
+  if (playKey() === 'lesson') { x = tx(playPos().pos); g.fillStyle = '#000'; g.fillRect(x - 1, 0, 2, H); }
+  drawOver();
+}
+function drawOver() {
+  const g = octx; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.fillStyle = C.ruler; g.fillRect(0, 0, OW, OH);
+  if (!audio) return;
+  const k = OW / Math.max(audio.dur, 0.001), mid = OH / 2, amp = (OH / 2 - 3) / audio.peak, sr = audio.sr;
+  g.fillStyle = C.talk;
+  for (let x = 0; x < OW; x += 1 / dpr) { colMM(x / k * sr, (x + 1 / dpr) / k * sr); g.fillRect(x, mid - MX * amp, 1 / dpr, Math.max(1 / dpr, (MX - MN) * amp)); }
+  g.fillStyle = 'rgba(0,0,0,.55)'; for (const m of lesson.markers) g.fillRect(m.t * k, 0, 1, OH);
+  g.fillStyle = 'rgba(0,0,0,.35)'; for (const r of regions) if (r.lessonId === lesson.id) g.fillRect(r.start * k, OH - 5, Math.max(2, (r.end - r.start) * k), 5);
+  const a = view.t0 * k, b = (view.t0 + W / view.pps) * k;
+  g.strokeStyle = C.ink; g.lineWidth = 1.5; g.strokeRect(a + .75, .75, Math.max(3, b - a) - 1.5, OH - 1.5);
+  g.fillStyle = C.ink; g.fillRect(cursor * k, 0, 1, OH);
+  if (playKey() === 'lesson') { g.fillStyle = '#000'; g.fillRect(playPos().pos * k - 1, 0, 2, OH); }
+}
+
+// ---------- stage 1 gestures
+function snapSel(t) { let best = t, bd = SNAP_PX / view.pps; for (const m of lesson.markers) { const d = Math.abs(m.t - t); if (d < bd) { bd = d; best = m.t; } } return best; }
+function markerAt(x) { let best = null, bd = 18; for (const m of lesson.markers) { const d = x - tx(m.t); if (d > -12 && d < 40) { const dd = d < 0 ? -d : d * 0.4; if (dd < bd) { bd = dd; best = m; } } } return best; }
+function pt(e, el) { const r = (el || cv).getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+const ptrs = new Map();
+let gst = null, pinch = null, pinchHold = false, lastTap = { t: 0, x: -99 };
+function mkSnap() { return JSON.stringify(lesson.markers); }
+function mkPush(s) { mkUndo.push(s); if (mkUndo.length > 100) mkUndo.shift(); }
+cv.addEventListener('pointerdown', e => {
+  if (!audio) return;
+  e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (_) { }
+  const p = pt(e); ptrs.set(e.pointerId, p);
+  if (ptrs.size === 2) {
+    if (gst) { if (gst.before) lesson.markers = JSON.parse(gst.before); sel = gst.selBefore; }
+    gst = null; const [a, b] = [...ptrs.values()];
+    pinch = { d0: Math.max(20, Math.abs(a.x - b.x)), pps0: view.pps, tMid: tAt((a.x + b.x) / 2) };
+    updateSecBar(); needDraw = true; return;
+  }
+  if (ptrs.size > 2 || pinchHold) return;
+  const t = tAt(p.x);
+  gst = { id: e.pointerId, x0: p.x, y0: p.y, t, active: false, selBefore: sel };
+  if (p.y < RULER) {
+    const m = markerAt(p.x);
+    if (m) { gst.kind = 'marker'; gst.m = m; } else { gst.kind = 'scrub'; gst.active = true; seek(t); }
+    return;
+  }
+  if (sel) { const ea = Math.abs(p.x - tx(sel.a)), eb = Math.abs(p.x - tx(sel.b)); if (Math.min(ea, eb) < 18) { gst.kind = 'edge'; gst.which = ea <= eb ? 'a' : 'b'; return; } }
+  gst.kind = 'new';
+});
+cv.addEventListener('pointermove', e => {
+  if (!ptrs.has(e.pointerId)) return;
+  const p = pt(e); ptrs.set(e.pointerId, p);
+  if (pinch && ptrs.size >= 2) {
+    const [a, b] = [...ptrs.values()], mid = (a.x + b.x) / 2, d = Math.max(20, Math.abs(a.x - b.x));
+    view.pps = pinch.pps0 * d / pinch.d0; clampView(); view.t0 = pinch.tMid - mid / view.pps; clampView(); needDraw = true; return;
+  }
+  const g = gst; if (!g || g.id !== e.pointerId) return;
+  if (!g.active) { if (Math.hypot(p.x - g.x0, p.y - g.y0) < 7) return; g.active = true; if (g.kind === 'marker') g.before = mkSnap(); if (g.kind === 'new') g.anchor = snapSel(g.t); }
+  const t = clamp(tAt(p.x), 0, dur());
+  if (g.kind === 'scrub') seek(t);
+  else if (g.kind === 'marker') { g.m.t = t; curMarker = g.m.id; }
+  else if (g.kind === 'new') { const s = snapSel(t); sel = { a: Math.min(g.anchor, s), b: Math.max(g.anchor, s) }; cursor = sel.a; }
+  else if (g.kind === 'edge') { const s = snapSel(t); sel = Object.assign({}, sel); sel[g.which] = s; if (sel.a > sel.b) { const k = sel.a; sel.a = sel.b; sel.b = k; g.which = g.which === 'a' ? 'b' : 'a'; } cursor = sel.a; }
+  updateTime(); needDraw = true;
+});
+function endPtr(e) {
+  if (!ptrs.has(e.pointerId)) return;
+  ptrs.delete(e.pointerId);
+  if (pinch) { if (ptrs.size < 2) { pinch = null; pinchHold = ptrs.size > 0; saveLessonView(); } return; }
+  if (pinchHold) { if (!ptrs.size) pinchHold = false; return; }
+  const g = gst; if (!g || g.id !== e.pointerId) return; gst = null;
+  if (e.type === 'pointercancel') { if (g.before) lesson.markers = JSON.parse(g.before); sel = g.selBefore; needDraw = true; updateSecBar(); return; }
+  if (!g.active) { tapAt(g); return; }
+  if (g.kind === 'new' && sel && tx(sel.b) - tx(sel.a) < 3) sel = null;
+  if (g.before && g.before !== mkSnap()) { mkPush(g.before); saveSoon('lessons', lesson); renderMarkers(); }
+  updateSecBar(); needDraw = true;
+}
+cv.addEventListener('pointerup', endPtr); cv.addEventListener('pointercancel', endPtr);
+function tapAt(g) {
+  if (g.kind === 'scrub') return;
+  if (g.kind === 'marker') { seek(g.m.t); curMarker = g.m.id; renderMarkers(true); needDraw = true; return; }
+  const now = performance.now(), dbl = now - lastTap.t < 380 && Math.abs(g.x0 - lastTap.x) < 24;
+  lastTap = dbl ? { t: 0, x: -99 } : { t: now, x: g.x0 };
+  if (dbl) { regionBetweenMarkers(g.t); return; }
+  sel = null; seek(snapSel(g.t)); updateSecBar();
+}
+function regionBetweenMarkers(t) {   // double-tap: from the marker before to the marker after (or the ends)
+  let a = 0, b = dur(); for (const m of lesson.markers) { if (m.t <= t && m.t > a) a = m.t; if (m.t > t && m.t < b) b = m.t; }
+  if (b - a < 0.05) return; sel = { a, b }; cursor = a; updateSecBar(); needDraw = true;
+}
+cv.addEventListener('wheel', e => {
+  if (!audio) return; e.preventDefault(); const p = pt(e);
+  if (e.ctrlKey || e.metaKey) zoomAt(Math.exp(-e.deltaY * 0.01), p.x);
+  else { view.t0 += (Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY) / view.pps; clampView(); needDraw = true; saveLessonView(); }
+}, { passive: false });
+let ovDrag = false;
+function ovGo(e) { const t = pt(e, ov).x / OW * dur(); view.t0 = t - W / view.pps / 2; clampView(); needDraw = true; }
+ov.addEventListener('pointerdown', e => { if (!audio) return; ovDrag = true; try { ov.setPointerCapture(e.pointerId); } catch (_) { } ovGo(e); });
+ov.addEventListener('pointermove', e => { if (ovDrag) ovGo(e); });
+ov.addEventListener('pointerup', () => { ovDrag = false; saveLessonView(); });
+ov.addEventListener('pointercancel', () => { ovDrag = false; });
+
+// ---------- playback (one player for the lesson, a region, or the day's list)
+let ac = null, master = null, play = null;
+const FIN = new Float32Array(32).map((_, i) => (Math.pow(1000, i / 31) - 1) / 999);   // exponential rise 0 → 1
+const FOUT = FIN.slice().reverse();
+const fadeAt = x => (Math.pow(1000, x) - 1) / 999;
+function ensureAC() {
+  try { if (navigator.audioSession && navigator.audioSession.type !== 'playback') navigator.audioSession.type = 'playback'; } catch (e) { }
+  if (!ac) { const AC = window.AudioContext || window.webkitAudioContext; ac = new AC({ latencyHint: 'interactive' }); master = ac.createGain(); master.connect(ac.destination); }
+  if (ac.state !== 'running') ac.resume().catch(() => { });
+  return ac;
+}
+function srcSeg(P, buf, from, to, at) {     // one faded piece of a buffer at ac time `at`
+  const d = to - from; if (d < 0.002) return;
+  const s = ac.createBufferSource(); s.buffer = buf; const g = ac.createGain(); s.connect(g); g.connect(master);
+  const st = Math.max(at, ac.currentTime), F = Math.min(FADE, d / 2 - 1e-4);
+  if (F > 0.0005) { try { g.gain.setValueCurveAtTime(FIN, st, F); g.gain.setValueCurveAtTime(FOUT, st + d - F, F); } catch (e) { } }
+  s.start(st, from, d); P.srcs.push(s);
+}
+// segs: [{key, buf, from, to}] played one after another with `gap` seconds between; loop: repeat (one segment only)
+function startPlay(segs, opts = {}) {
+  ensureAC(); stopPlay(true);
+  const P = { srcs: [], segs: [], loop: !!opts.loop && segs.length === 1, when: ac.currentTime + 0.05, onEnd: opts.onEnd };
+  let t = 0;
+  for (const s of segs) { P.segs.push(Object.assign({ t }, s)); t += (s.to - s.from) + (opts.gap || 0); }
+  P.total = t - (opts.gap || 0);
+  for (const s of P.segs) srcSeg(P, s.buf, s.from, s.to, P.when + s.t);
+  if (P.loop) { P.loopLen = P.segs[0].to - P.segs[0].from + 0.4; P.next = P.when + P.loopLen; }
+  P.timer = setInterval(() => {
+    if (play !== P) return;
+    if (P.loop) { while (P.next - ac.currentTime < 0.6) { const s = P.segs[0]; srcSeg(P, s.buf, s.from, s.to, P.next); P.next += P.loopLen; } }
+    else if (ac.currentTime - P.when > P.total + 0.08) stopPlay();
+  }, 60);
+  play = P; playChanged();
+}
+function stopPlay(quiet) {
+  if (!play) return; const P = play; play = null; clearInterval(P.timer);
+  for (const s of P.srcs) { try { s.stop(); } catch (e) { } }
+  if (!quiet) { playChanged(); if (P.onEnd) P.onEnd(); }
+}
+function playPos() {   // {key, pos} — pos is in the segment's buffer time
+  const P = play; if (!P) return { key: null, pos: 0 };
+  const lat = ac.outputLatency || ac.baseLatency || 0; let el = Math.max(0, ac.currentTime - P.when - lat);
+  if (P.loop) el = el % P.loopLen;
+  let s = P.segs[0]; for (const x of P.segs) if (el >= x.t) s = x;
+  return { key: s.key, pos: Math.min(s.to, s.from + el - s.t), seg: s };
+}
+const playKey = () => play ? playPos().key : null;
+function playChanged() {
+  $('#bPlay').textContent = playKey() === 'lesson' || (play && play.segs[0].key === 'lesson') ? '■ Stop' : '▶ Play';
+  $('#bPlayList').textContent = play && play.list ? '■ Stop' : '▶ Play the list';
+  updateRowPlay(); needDraw = true;
+}
+
+// stage 1 play
+function lessonPlay(from, to, loop) { if (!audio) return; startPlay([{ key: 'lesson', buf: audio.buf, from, to }], { loop }); }
+function togglePlay() {
+  if (play) { stopPlay(); return; }
+  if (!audio) return;
+  if (loopOn && sel && sel.b - sel.a > 0.05) lessonPlay(sel.a, sel.b, true);
+  else lessonPlay(cursor, dur());
+}
+function seek(t) {
+  cursor = clamp(t, 0, dur());
+  if (play && play.segs[0].key === 'lesson') { const s = play.segs[0]; if (play.loop) { if (cursor >= s.from && cursor < s.to) lessonPlay(cursor, s.to); } else lessonPlay(cursor, s.to > cursor ? s.to : dur()); }
+  updateTime(); needDraw = true;
+}
+function updateTime() { const k = playKey(); $('#time').textContent = fmt(k === 'lesson' ? playPos().pos : cursor); }
+
+// ---------- markers (stage 1)
+function addMarker() {
+  if (!audio) return; const t = playKey() === 'lesson' ? playPos().pos : cursor;
+  mkPush(mkSnap()); const m = { id: uid(), t, note: '' }; lesson.markers.push(m); curMarker = m.id;
+  saveSoon('lessons', lesson); renderMarkers(); needDraw = true;
+  if (!play) setTimeout(() => { const i = document.querySelector('[data-mk="' + m.id + '"] input'); if (i) { i.scrollIntoView({ block: 'nearest' }); i.focus(); } }, 30);
+}
+function renderMarkers(scrollToCur) {
+  const box = $('#mkList'); box.textContent = '';
+  const ms = sortedMarkers(); $('#mkTitle').textContent = 'Markers (' + ms.length + ')';
+  $('#mkCopy').disabled = $('#mkShare').disabled = !ms.length;
+  if (!lesson || !audio) { box.append(h('div', { class: 'empty' }, 'Open a lesson recording, then add markers at each exercise.')); return; }
+  if (!ms.length) box.append(h('div', { class: 'empty' }, 'No markers yet. Tap + Marker (or M) while listening, then type a note here. Double-tap between two markers to select that part.'));
+  ms.forEach((m, i) => {
+    let before = null;
+    box.append(h('div', { class: 'mk' + (m.id === curMarker ? ' cur' : ''), 'data-mk': m.id },
+      h('span', { class: 'n' }, String(i + 1)),
+      h('button', { class: 'small t', onclick: () => { curMarker = m.id; showT(m.t); seek(m.t); renderMarkers(); } }, fmt(m.t)),
+      h('input', { value: m.note, placeholder: 'Note…', onfocus: () => { before = mkSnap(); },
+        oninput: e => { m.note = e.target.value; needDraw = true; saveSoon('lessons', lesson); },
+        onchange: () => { if (before && before !== mkSnap()) mkPush(before); },
+        onkeydown: e => { if (e.key === 'Enter' || e.key === 'Escape') e.target.blur(); e.stopPropagation(); } }),
+      h('button', { class: 'small', 'aria-label': 'Delete marker', onclick: () => { mkPush(mkSnap()); lesson.markers = lesson.markers.filter(k => k.id !== m.id); saveSoon('lessons', lesson); renderMarkers(); needDraw = true; } }, '✕')));
+  });
+  if (scrollToCur) { const r = box.querySelector('.cur'); if (r) r.scrollIntoView({ block: 'nearest' }); }
+}
+function markerText() { return lesson.name + '\n' + sortedMarkers().map((m, i) => (i + 1) + '  ' + fmt(m.t, 1) + (m.note ? '  ' + m.note : '')).join('\n'); }
+async function copyText(t) { try { await navigator.clipboard.writeText(t); toast('Copied. Paste it into Notes.'); } catch (e) { toast('Could not copy here; use Share.'); } }
+async function shareText(title, t) { try { if (navigator.share) { await navigator.share({ title, text: t }); return; } } catch (e) { if (e && e.name === 'AbortError') return; } copyText(t); }
+
+// ---------- section bar + adding regions
+function updateSecBar() {
+  const bar = $('#secbar'); bar.textContent = '';
+  if (!audio) { bar.append(h('span', { class: 'muted' }, lesson ? 'Practise the regions in 2 Practise, or open another lesson.' : 'Open a lesson recording to start (Lessons…).')); return; }
+  if (sel) {
+    bar.append(h('span', { class: 'muted' }, 'Region ' + fmt(sel.a) + ' – ' + fmt(sel.b) + ' · ' + fmt(sel.b - sel.a)),
+      h('span', { class: 'sp' }),
+      h('button', { onclick: () => lessonPlay(sel.a, sel.b, loopOn) }, '▶ Play region'),
+      h('button', { onclick: shareSection }, 'Share audio'),
+      h('button', { class: 'strong', onclick: addRegion }, 'Add to repository →'),
+      h('button', { 'aria-label': 'Clear the selection', onclick: () => { sel = null; updateSecBar(); needDraw = true; } }, '✕'));
+  } else bar.append(h('span', { class: 'muted' }, 'Drag across the waveform to choose a region · double-tap between two markers · tap the ruler to move the cursor'));
+}
+function sliceRange(a, b) {   // the lesson audio between a and b with 3 ms fades
+  const sr = audio.sr, i0 = Math.round(a * sr), n = Math.max(1, Math.round((b - a) * sr)), F = Math.max(1, Math.min(Math.round(FADE * sr), n >> 1)), out = [];
+  for (const d of audio.data) {
+    const o = d.slice(i0, i0 + n);
+    for (let i = 0; i < F; i++) { const g = fadeAt(i / F); o[i] *= g; o[o.length - 1 - i] *= g; }
+    out.push(o);
+  }
+  return out;
+}
+function miniPeaks(chs, N = 300) {
+  const n = chs[0].length, out = new Array(N).fill(0); let mx = 1e-4;
+  for (let j = 0; j < N; j++) { const a = Math.floor(j * n / N), b = Math.max(a + 1, Math.floor((j + 1) * n / N)); let m = 0;
+    for (const d of chs) for (let i = a; i < b; i += 4) { const v = Math.abs(d[i]); if (v > m) m = v; }
+    out[j] = m; if (m > mx) mx = m; }
+  return out.map(v => Math.round(v / mx * 1000) / 1000);
+}
+function nameFor(a, b) {     // the note of the marker the region starts at (or the one before it, or the first inside it)
+  let best = null; for (const k of sortedMarkers()) if (k.t <= a + 0.05) best = k;
+  if (!best) best = sortedMarkers().find(k => k.t > a && k.t < b) || null;
+  return best && best.note ? best.note : lesson.name + ' ' + fmt(a, 0);
+}
+async function addRegion() {
+  if (!sel || sel.b - sel.a < 0.05) return;
+  const a = sel.a, b = sel.b, chs = sliceRange(a, b);
+  const blob = new Blob([wavBytes(chs, audio.sr, 24)], { type: 'audio/wav' });
+  const r = { id: uid(), name: nameFor(a, b), note: '', lessonId: lesson.id, lessonName: lesson.name, lessonDay: lesson.day,
+    start: a, end: b, dur: b - a, instr: 0, created: Date.now(), peaks: miniPeaks(chs) };
+  try { await dbPut('regionAudio', blob, r.id); await dbPut('regions', r); }
+  catch (e) { toast('Could not save the region (storage full?)'); return; }
+  regions.push(r); regionBlobs.set(r.id, blob);
+  sel = null; updateSecBar(); needDraw = true; renderRepo(r.id);
+  toast('Added “' + r.name + '” to the repository');
+}
+function shareSection() { if (!sel) return; shareFiles([new File([wavBytes(sliceRange(sel.a, sel.b), audio.sr, 24)], safeName(lesson.name + ' ' + fmtFile(sel.a) + '-' + fmtFile(sel.b)) + '.wav', { type: 'audio/wav' })]); }
+
+// ---------- WAV + share
+function wavBytes(chs, sr, bits) {
+  const Cn = chs.length, n = chs[0].length, bps = bits / 8, size = n * Cn * bps, buf = new ArrayBuffer(44 + size), v = new DataView(buf);
+  const str = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  str(0, 'RIFF'); v.setUint32(4, 36 + size, true); str(8, 'WAVE'); str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
+  v.setUint16(22, Cn, true); v.setUint32(24, sr, true); v.setUint32(28, sr * Cn * bps, true); v.setUint16(32, Cn * bps, true); v.setUint16(34, bits, true);
+  str(36, 'data'); v.setUint32(40, size, true);
+  let o = 44;
+  if (bits === 16) { for (let i = 0; i < n; i++) for (let c = 0; c < Cn; c++) { v.setInt16(o, Math.round(clamp(chs[c][i] * 32767 + (Math.random() - Math.random()), -32768, 32767)), true); o += 2; } }
+  else { for (let i = 0; i < n; i++) for (let c = 0; c < Cn; c++) { let x = Math.round(clamp(chs[c][i], -1, 1) * 8388607); if (x < 0) x += 16777216; v.setUint8(o, x & 255); v.setUint8(o + 1, (x >> 8) & 255); v.setUint8(o + 2, (x >> 16) & 255); o += 3; } }
+  return buf;
+}
+async function shareFiles(files) {
+  try { if (navigator.canShare && navigator.share && navigator.canShare({ files })) { await navigator.share({ files }); return; } }
+  catch (e) {
+    if (e && e.name === 'AbortError') return;
+    if (e && e.name === 'NotAllowedError') { if ((await ask('Ready to share ' + (files.length > 1 ? files.length + ' files.' : '“' + files[0].name + '”.'), ['Share', 'Cancel'])) === 0) return shareFiles(files); return; }
+  }
+  for (const f of files) { const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 5000); }
+}
+function regionFile(r, name) { const b = regionBlobs.get(r.id); return b ? new File([b], safeName(name || r.name) + '.wav', { type: 'audio/wav' }) : null; }
+
+// ---------- regions: decode on demand
+function decode(ab) {
+  ensureAC();
+  return new Promise((res, rej) => { let done = false; const ok = b => { if (!done) { done = true; res(b); } }, bad = e => { if (!done) { done = true; rej(e || new Error('This audio format could not be read.')); } };
+    try { const p = ac.decodeAudioData(ab, ok, bad); if (p && p.then) p.then(ok, bad); } catch (e) { bad(e); } });
+}
+async function regionBuf(r) {
+  if (regionBufs.has(r.id)) return regionBufs.get(r.id);
+  let b = regionBlobs.get(r.id); if (!b) { b = await dbGet('regionAudio', r.id); if (b) regionBlobs.set(r.id, b); }
+  if (!b) throw new Error('The audio for “' + r.name + '” is missing.');
+  const buf = await decode(await b.arrayBuffer()); regionBufs.set(r.id, buf); return buf;
+}
+const regionById = id => regions.find(r => r.id === id);
+let rowLoop = {};
+async function playRegion(r, part) {   // part: 'all' | 'instr' | 'sing' | number (start time)
+  ensureAC();
+  if (play && !play.list && play.segs[0].key === r.id && part === 'all') { stopPlay(); return; }
+  let buf; try { buf = await regionBuf(r); } catch (e) { toast(e.message); return; }
+  let from = 0, to = buf.duration;
+  if (part === 'instr') to = Math.min(to, r.instr); else if (part === 'sing') from = r.instr; else if (typeof part === 'number') from = clamp(part, 0, to - 0.05);
+  startPlay([{ key: r.id, buf, from, to }], { loop: !!rowLoop[r.id] && part !== 'instr' });
+}
+async function playList() {
+  if (play && play.list) { stopPlay(); return; }
+  const items = dayItems(viewDay); if (!items.length) return;
+  busy('Getting the regions ready…');
+  const segs = [];
+  try { for (const r of items) { const buf = await regionBuf(r); segs.push({ key: r.id, buf, from: 0, to: buf.duration }); } }
+  catch (e) { busy(''); toast(e.message); return; }
+  busy(''); startPlay(segs, { gap: 2 }); play.list = true; playChanged();
+}
+
+// ---------- days (stage 2)
+function dayObj(k) { if (!days[k]) days[k] = { day: k, items: [] }; return days[k]; }
+function dayItems(k) { return (days[k] ? days[k].items : []).map(regionById).filter(Boolean); }
+function lastUsed(id) { let best = null; for (const k in days) if (days[k].items.includes(id) && (!best || k > best)) best = k; return best; }
+function addToDay(id, index) {
+  const d = dayObj(viewDay);
+  const cur = d.items.indexOf(id);
+  if (cur >= 0) { if (index == null) { toast('Already in this list'); const el = document.querySelector('.row[data-id="' + id + '"]'); if (el) el.scrollIntoView({ block: 'nearest' }); return; } d.items.splice(cur, 1); if (index > cur) index--; }
+  if (index == null || index > d.items.length) index = d.items.length;
+  d.items.splice(index, 0, id); saveSoon('days', d, 100); renderList(); renderRepo();
+}
+function removeFromDay(id) { const d = dayObj(viewDay); d.items = d.items.filter(x => x !== id); saveSoon('days', d, 100); renderList(); renderRepo(); }
+
+function renderDayHead() {
+  const box = $('#dayhead'); box.textContent = '';
+  const items = dayItems(viewDay), tot = items.reduce((s, r) => s + r.dur, 0), isToday = viewDay === dayKey();
+  box.append(h('h1', {}, (isToday ? 'Today · ' : '') + dayLabel(viewDay, true)), h('span', { class: 'muted' }, items.length + (items.length === 1 ? ' region · ' : ' regions · ') + fmt(tot, 0)), h('span', { class: 'sp' }));
+  const others = Object.keys(days).filter(k => k !== viewDay && days[k].items.length).sort().reverse();
+  if (!isToday) box.append(h('button', { class: 'chip strong', onclick: () => { viewDay = dayKey(); renderPractise(); } }, 'Today'));
+  if (others.length) box.append(h('span', { class: 'muted', style: 'font-size:13px' }, 'Earlier days:'));
+  for (const k of others.slice(0, 4)) box.append(h('button', { class: 'chip', onclick: () => { viewDay = k; renderPractise(); } }, dayLabel(k, true) + ' · ' + days[k].items.length));
+  if (others.length > 4) {
+    const s = h('select', { class: 'chip', style: 'border:1px solid #D9D0C1;border-radius:18px;background:#fff;padding:0 10px', onchange: e => { if (e.target.value) { viewDay = e.target.value; renderPractise(); } } },
+      h('option', { value: '' }, 'All days…'), ...others.map(k => h('option', { value: k }, dayLabel(k, true) + ' · ' + days[k].items.length)));
+    box.append(s);
+  }
+}
+function drawMini(cvs, r) {
+  const d = window.devicePixelRatio || 1, w = cvs.clientWidth || 280, hh = cvs.clientHeight || 46;
+  if (cvs.width !== Math.round(w * d)) { cvs.width = Math.round(w * d); cvs.height = Math.round(hh * d); }
+  const g = cvs.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0);
+  g.fillStyle = C.panel; g.fillRect(0, 0, w, hh);
+  const ix = r.instr / r.dur * w;
+  if (ix > 0) { g.fillStyle = 'rgba(0,0,0,.06)'; g.fillRect(0, 0, ix, hh); }
+  const P = r.peaks, n = P.length, bw = w / n, mid = hh / 2;
+  for (let i = 0; i < n; i++) { const x = i * bw, a = Math.max(0.5, P[i] * (hh / 2 - 3)); g.fillStyle = x < ix ? C.talk : C.ink2; g.fillRect(x, mid - a, Math.max(0.6, bw - 0.2), a * 2); }
+  g.fillStyle = C.ink; g.fillRect(Math.max(0, ix - 1), 0, 2, hh); g.fillRect(Math.max(0, ix - 4), hh - 10, 8, 10);
+  const k = playKey();
+  if (k === r.id) { const x = playPos().pos / r.dur * w; g.fillStyle = '#000'; g.fillRect(x - 1, 0, 2, hh); }
+}
+function miniGestures(cvs, r) {
+  let drag = null;
+  cvs.addEventListener('pointerdown', e => {
+    e.preventDefault(); try { cvs.setPointerCapture(e.pointerId); } catch (_) { }
+    const x = e.clientX - cvs.getBoundingClientRect().left, w = cvs.clientWidth, ix = r.instr / r.dur * w;
+    drag = { near: Math.abs(x - ix) < 18, x0: x, moved: false };
+  });
+  cvs.addEventListener('pointermove', e => {
+    if (!drag) return; const x = e.clientX - cvs.getBoundingClientRect().left, w = cvs.clientWidth;
+    if (!drag.moved && Math.abs(x - drag.x0) < 5) return; drag.moved = true;
+    if (drag.near) { r.instr = clamp(x / w * r.dur, 0, Math.max(0, r.dur - 0.3)); if (r.instr < 0.15) r.instr = 0; drawMini(cvs, r); }
+  });
+  const up = e => {
+    if (!drag) return; const d = drag; drag = null;
+    if (d.moved && d.near) { saveSoon('regions', r); updateRowButtons(r); renderRepo(); return; }
+    if (!d.moved && e.type === 'pointerup') { const w = cvs.clientWidth; playRegion(r, d.x0 / w * r.dur); }
+  };
+  cvs.addEventListener('pointerup', up); cvs.addEventListener('pointercancel', up);
+}
+function updateRowButtons(r) {
+  const row = document.querySelector('.row[data-id="' + r.id + '"]'); if (!row) return;
+  const bi = row.querySelector('[data-b=instr]'), bs = row.querySelector('[data-b=sing]');
+  if (bi) bi.disabled = r.instr < 0.15; if (bs) bs.disabled = r.instr < 0.15;
+  const meta = row.querySelector('.meta'); if (meta) meta.textContent = rowMeta(r);
+}
+function rowMeta(r) { return 'Lesson ' + dayLabel(r.lessonDay) + ' · ' + fmt(r.dur, 0) + (r.instr >= 0.15 ? ' · talk ' + fmt(r.instr, 0) : ''); }
+function renderList() {
+  const box = $('#list'); box.textContent = '';
+  const items = dayItems(viewDay);
+  items.forEach((r, i) => {
+    const cvs = h('canvas', { 'aria-label': 'Waveform: tap to play from there, drag the handle to where the singing starts' });
+    const loopB = h('button', { class: 'small' + (rowLoop[r.id] ? ' on' : ''), 'aria-label': 'Loop', onclick: e => { rowLoop[r.id] = !rowLoop[r.id]; e.currentTarget.classList.toggle('on', !!rowLoop[r.id]); } }, '⟲');
+    const row = h('div', { class: 'row', 'data-id': r.id },
+      h('div', { class: 'rcol' },
+        h('span', { class: 'grip', 'aria-label': 'Drag to reorder', onpointerdown: e => startDrag(e, r.id, 'list') }, '⋮⋮'),
+        h('span', { class: 'num' }, String(i + 1)),
+        h('button', { class: 'strong', 'data-play': r.id, 'aria-label': 'Play', style: 'min-width:44px;padding:0', onclick: () => playRegion(r, 'all') }, '▶')),
+      h('div', { class: 'rmid' },
+        h('input', { class: 'nm', value: r.name, 'aria-label': 'Region name', oninput: e => { r.name = e.target.value; saveSoon('regions', r); }, onchange: () => renderRepo(), onkeydown: e => { if (e.key === 'Enter') e.target.blur(); e.stopPropagation(); } }),
+        h('span', { class: 'muted meta', style: 'font-size:13px' }, rowMeta(r)),
+        cvs,
+        h('div', { class: 'rbtns' },
+          h('button', { class: 'small', 'data-b': 'instr', disabled: r.instr < 0.15, onclick: () => playRegion(r, 'instr') }, 'Instructions'),
+          h('button', { class: 'small', 'data-b': 'sing', disabled: r.instr < 0.15, onclick: () => playRegion(r, 'sing') }, 'Sing along'),
+          loopB,
+          h('button', { class: 'small', onclick: () => { const f = regionFile(r); if (f) shareFiles([f]); } }, 'Share'),
+          h('button', { class: 'small', 'aria-label': 'Take out of this list', onclick: () => removeFromDay(r.id) }, '✕'))),
+      h('textarea', { class: 'note', placeholder: 'Your notes on this exercise…', value: r.note, 'aria-label': 'Notes',
+        oninput: e => { r.note = e.target.value; saveSoon('regions', r); }, onkeydown: e => e.stopPropagation() }));
+    box.append(row);
+    miniGestures(cvs, r);
+    requestAnimationFrame(() => drawMini(cvs, r));
+  });
+  box.append(h('div', { class: 'drop', id: 'dropZone' }, items.length ? 'Drag more regions here from the repository →' : 'Drag regions here from the repository → (or tap + beside one)'));
+  renderDayHead(); updateRowPlay();
+}
+function updateRowPlay() {
+  const k = play ? playPos().key : null;
+  for (const row of document.querySelectorAll('.row')) { const on = row.dataset.id === k; row.classList.toggle('playing', on); const b = row.querySelector('[data-play]'); if (b) b.textContent = on ? '■' : '▶'; }
+  for (const b of document.querySelectorAll('.ri [data-play]')) b.textContent = b.dataset.play === k ? '■' : '▶';
+}
+function renderPractise() { renderList(); renderRepo(); }
+
+// ---------- drag from the repository / reorder
+let drag = null;
+function startDrag(e, id, from) {
+  e.preventDefault(); e.stopPropagation();
+  const r = regionById(id); if (!r) return;
+  drag = { id, from, ghost: h('div', { class: 'ghost' }, r.name), line: h('div', { id: 'insLine' }), x0: e.clientX, y0: e.clientY, live: false, index: null };
+  window.addEventListener('pointermove', dragMove); window.addEventListener('pointerup', dragEnd); window.addEventListener('pointercancel', dragEnd);
+}
+function dragMove(e) {
+  if (!drag) return;
+  if (!drag.live) { if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 6) return; drag.live = true; document.body.append(drag.ghost); }
+  drag.ghost.style.left = e.clientX + 'px'; drag.ghost.style.top = e.clientY + 'px';
+  const list = $('#list'), lr = list.getBoundingClientRect();
+  const over = stage === 'practise' && e.clientX >= lr.left && e.clientX <= lr.right && e.clientY >= lr.top && e.clientY <= lr.bottom;
+  if (!over) { drag.index = null; drag.line.remove(); return; }
+  const rows = [...list.querySelectorAll('.row')]; let idx = rows.length, y = null;
+  for (let i = 0; i < rows.length; i++) { const rr = rows[i].getBoundingClientRect(); if (e.clientY < rr.top + rr.height / 2) { idx = i; y = rr.top - lr.top + list.scrollTop - 5; break; } }
+  if (y == null) { const last = rows[rows.length - 1]; y = last ? last.getBoundingClientRect().bottom - lr.top + list.scrollTop + 2 : 2; }
+  drag.index = idx; drag.line.style.top = y + 'px'; if (!drag.line.parentNode) list.append(drag.line);
+  if (e.clientY < lr.top + 40) list.scrollTop -= 10; else if (e.clientY > lr.bottom - 40) list.scrollTop += 10;
+}
+function dragEnd() {
+  window.removeEventListener('pointermove', dragMove); window.removeEventListener('pointerup', dragEnd); window.removeEventListener('pointercancel', dragEnd);
+  const d = drag; drag = null; if (!d) return;
+  d.ghost.remove(); d.line.remove();
+  if (d.live && d.index != null) addToDay(d.id, d.index);
+}
+
+// ---------- repository (right panel)
+function renderRepo(flashId) {
+  const box = $('#repo'); box.textContent = '';
+  const q = $('#repoSearch').value.trim().toLowerCase(), today = dayKey(), inView = new Set(days[viewDay] ? days[viewDay].items : []);
+  const list = regions.filter(r => !q || (r.name + ' ' + r.note + ' ' + r.lessonName).toLowerCase().includes(q))
+    .sort((a, b) => (b.lessonDay || '').localeCompare(a.lessonDay || '') || a.lessonId.localeCompare(b.lessonId) || a.start - b.start);
+  const lessonsN = new Set(regions.map(r => r.lessonId)).size;
+  $('#repoCount').textContent = regions.length + (regions.length === 1 ? ' region · ' : ' regions · ') + lessonsN + (lessonsN === 1 ? ' lesson' : ' lessons');
+  if (!regions.length) box.append(h('div', { class: 'empty' }, 'Empty. In 1 Capture, select a region of a lesson recording and tap Add to repository.'));
+  let lastLesson = null;
+  for (const r of list) {
+    if (r.lessonId !== lastLesson) { lastLesson = r.lessonId; box.append(h('div', { class: 'rh' }, dayLabel(r.lessonDay) + ' · ' + r.lessonName)); }
+    const lu = lastUsed(r.id), used = lu === today ? '✓ today' : lu ? 'last used ' + dayLabel(lu) : 'not used yet';
+    const it = h('div', { class: 'ri' + (inView.has(r.id) && stage === 'practise' ? ' today' : '') },
+      h('span', { class: 'grip', 'aria-label': 'Drag into the list', onpointerdown: e => { if (stage === 'practise') startDrag(e, r.id, 'repo'); } }, '⋮⋮'),
+      h('div', { class: 'txt' }, h('b', {}, r.name), h('span', {}, fmt(r.dur, 0) + ' · ' + used)),
+      h('button', { 'data-play': r.id, 'aria-label': 'Play', onclick: () => playRegion(r, 'all') }, '▶'),
+      stage === 'practise' ? h('button', { 'aria-label': 'Add to this list', onclick: () => addToDay(r.id) }, '+') : null,
+      h('button', { 'aria-label': 'More', onclick: e => regionMenu(e, r) }, '⋯'));
+    box.append(it);
+    if (r.id === flashId) setTimeout(() => it.scrollIntoView({ block: 'nearest' }), 30);
+  }
+  renderSideFoot(); updateRowPlay();
+}
+function renderSideFoot() {
+  const f = $('#sideFoot'); f.textContent = '';
+  if (stage === 'capture') f.append(h('button', { class: 'strong', disabled: !audio, onclick: finishLesson }, 'Finish lesson ▸'));
+  else f.append(h('button', { onclick: () => setStage('capture') }, '‹ Capture more'));
+}
+let menuEl = null;
+function closeMenu() { if (menuEl) { menuEl.remove(); menuEl = null; } }
+function regionMenu(e, r) {
+  closeMenu(); const rc = e.currentTarget.getBoundingClientRect();
+  const item = (label, fn) => h('button', { onclick: () => { closeMenu(); fn(); } }, label);
+  menuEl = h('div', { class: 'menu', style: 'top:' + Math.min(rc.bottom + 4, innerHeight - 220) + 'px;left:' + Math.max(8, rc.right - 230) + 'px' },
+    item('Rename…', async () => { const a = await ask('Name of the region', ['Save', 'Cancel'], r.name); if (a.i === 0 && a.text.trim()) { r.name = a.text.trim(); saveSoon('regions', r, 50); renderRepo(); if (stage === 'practise') renderList(); } }),
+    item('Share audio…', () => { const f = regionFile(r); if (f) shareFiles([f]); }),
+    item('Delete region…', async () => {
+      if ((await ask('Delete “' + r.name + '” from the repository and from every day’s list? Its note goes too.', ['Cancel', 'Delete'])) !== 1) return;
+      regions = regions.filter(x => x.id !== r.id); regionBlobs.delete(r.id); regionBufs.delete(r.id);
+      for (const k in days) if (days[k].items.includes(r.id)) { days[k].items = days[k].items.filter(x => x !== r.id); saveSoon('days', days[k], 50); }
+      await dbDel('regions', r.id).catch(() => { }); await dbDel('regionAudio', r.id).catch(() => { });
+      renderRepo(); if (stage === 'practise') renderList(); needDraw = true;
+    }));
+  document.body.append(menuEl);
+  setTimeout(() => document.addEventListener('pointerdown', function off(ev) { if (menuEl && !menuEl.contains(ev.target)) { closeMenu(); } document.removeEventListener('pointerdown', off, true); }, true), 0);
+}
+
+// ---------- export (stage 2)
+function exportMenu(e) {
+  closeMenu(); const rc = e.currentTarget.getBoundingClientRect(), items = dayItems(viewDay);
+  const item = (label, fn, dis) => h('button', { disabled: dis, onclick: () => { closeMenu(); fn(); } }, label);
+  menuEl = h('div', { class: 'menu', style: 'top:' + (rc.bottom + 4) + 'px;left:' + Math.max(8, rc.right - 260) + 'px' },
+    item('Share these regions (audio)', () => { const used = {}; shareFiles(items.map(r => { let n = safeName(r.name); if (used[n]) n += ' (' + (++used[n]) + ')'; else used[n] = 1; return regionFile(r, n); }).filter(Boolean)); }, !items.length),
+    item('Join into one file…', joinShare, !items.length),
+    item('Share names and notes (text)', () => shareText('VocalPrep ' + dayLabel(viewDay, true), notesText(items)), !items.length),
+    item('Copy names and notes', () => copyText(notesText(items)), !items.length));
+  document.body.append(menuEl);
+  setTimeout(() => document.addEventListener('pointerdown', function off(ev) { if (menuEl && !menuEl.contains(ev.target)) closeMenu(); document.removeEventListener('pointerdown', off, true); }, true), 0);
+}
+function notesText(items) { return 'VocalPrep · ' + dayLabel(viewDay, true) + '\n\n' + items.map((r, i) => (i + 1) + '. ' + r.name + ' (' + fmt(r.dur, 0) + ', lesson ' + dayLabel(r.lessonDay) + ')' + (r.note ? '\n' + r.note : '')).join('\n\n'); }
+async function joinShare() {
+  const items = dayItems(viewDay); if (!items.length) return;
+  busy('Joining…'); let bufs;
+  try { bufs = []; for (const r of items) bufs.push(await regionBuf(r)); } catch (e) { busy(''); toast(e.message); return; }
+  const sr = ac.sampleRate, gap = Math.round(sr * 1), Cn = Math.max(...bufs.map(b => b.numberOfChannels));
+  const n = bufs.reduce((s, b) => s + b.length, 0) + gap * (bufs.length - 1), out = [];
+  for (let c = 0; c < Cn; c++) { const o = new Float32Array(n); let k = 0; for (const b of bufs) { o.set(b.getChannelData(Math.min(c, b.numberOfChannels - 1)), k); k += b.length + gap; } out.push(o); }
+  const f = new File([wavBytes(out, sr, 24)], safeName('VocalPrep ' + viewDay) + '.wav', { type: 'audio/wav' });
+  busy('');
+  if ((await ask('The joined file is ready (' + fmt(n / sr, 0) + ').', ['Share', 'Cancel'])) === 0) shareFiles([f]);
+}
+
+// ---------- lessons
+function newLesson(file, buf) {
+  const base = file.name.replace(/\.[^.]+$/, '');
+  return { id: uid(), name: base, srcName: file.name, srcSize: file.size, day: dayKey(new Date(file.lastModified || Date.now())), created: Date.now(), dur: buf.length / buf.sampleRate, markers: [], hasAudio: true, view: null };
+}
+function loadLesson(l) {
+  stopPlay(); lesson = l; sel = null; curMarker = null; cursor = 0; mkUndo = [];
+  lsSet('vpLesson', l.id); $('#ovLessons').hidden = true;
+  layout(); if (l.view) { view.pps = l.view.pps; view.t0 = l.view.t0; clampView(); } else fit();
+  renderMarkers(); updateSecBar(); renderRepo(); needDraw = true;
+}
+async function openFile(file) {
+  if (!file) return;
+  busy('Reading ' + file.name + '…');
+  try {
+    const ab = await file.arrayBuffer();
+    const blob = new Blob([ab], { type: file.type || 'application/octet-stream' });
+    const buf = await decode(ab.slice(0));
+    let l = null;
+    try { const prev = (await dbAll('lessons')).filter(x => x.srcName === file.name && x.srcSize === file.size).sort((a, b) => b.created - a.created)[0];
+      if (prev) { busy(''); if ((await ask('You opened “' + file.name + '” before. Keep its markers?', ['Keep my markers', 'Start fresh'])) === 0) l = prev; } } catch (e) { }
+    if (!l) l = newLesson(file, buf);
+    l.hasAudio = true;
+    busy('Drawing the waveform…'); await new Promise(r => setTimeout(r, 20));
+    setAudio(buf);
+    try { await dbPut('lessonFiles', blob, l.id); await dbPut('lessons', l); }
+    catch (e) { toast('Could not keep the recording on this iPad (storage full?). It works until the app is closed.'); }
+    setStage('capture'); loadLesson(l);
+  } catch (e) { busy(''); await ask('Could not open “' + file.name + '”: ' + (e && e.message ? e.message : 'unknown format') + '. Try an m4a, wav, mp3 or aif file.', ['OK']); }
+  finally { busy(''); }
+}
+async function openStoredLesson(id, quiet) {
+  let l; try { l = await dbGet('lessons', id); } catch (e) { }
+  if (!l) return false;
+  if (!l.hasAudio) { lesson = l; audio = null; renderMarkers(); updateSecBar(); needDraw = true; return true; }
+  busy('Opening ' + l.name + '…');
+  try {
+    const blob = await dbGet('lessonFiles', id); if (!blob) throw new Error('The recording is no longer on this iPad.');
+    const buf = await decode(await blob.arrayBuffer());
+    setAudio(buf); loadLesson(l); return true;
+  } catch (e) { if (!quiet) await ask((e && e.message) || 'Could not open it.', ['OK']); return false; }
+  finally { busy(''); }
+}
+async function showLessons() {
+  const box = $('#lesList'); box.textContent = '';
+  let all = []; try { all = (await dbAll('lessons')).sort((a, b) => b.created - a.created); } catch (e) { }
+  if (!all.length) box.append(h('p', { class: 'muted' }, 'No lessons yet.'));
+  for (const l of all) {
+    const n = regions.filter(r => r.lessonId === l.id).length;
+    box.append(h('div', { class: 'les' },
+      h('div', { class: 'txt' }, h('b', {}, l.name), h('span', {}, dayLabel(l.day) + ' · ' + fmt(l.dur, 0) + ' · ' + l.markers.length + ' markers · ' + n + ' regions · ' + (l.hasAudio ? 'recording kept' : 'recording removed'))),
+      l.hasAudio ? h('button', { class: lesson && lesson.id === l.id && audio ? 'on' : '', onclick: () => { setStage('capture'); openStoredLesson(l.id); } }, lesson && lesson.id === l.id && audio ? 'Open now' : 'Open') : null,
+      l.hasAudio ? h('button', { onclick: async () => { await removeRecording(l); showLessons(); } }, 'Remove recording') : null));
+  }
+  $('#ovLessons').hidden = false;
+}
+async function removeRecording(l) {
+  const n = regions.filter(r => r.lessonId === l.id).length;
+  if ((await ask('Remove the full recording of “' + l.name + '” from VocalPrep? Its ' + n + (n === 1 ? ' region stays' : ' regions stay') + ' in the repository. The original file in Files / Dropbox is not touched.', ['Cancel', 'Remove recording'])) !== 1) return false;
+  try { await dbDel('lessonFiles', l.id); } catch (e) { }
+  l.hasAudio = false; await dbPut('lessons', l).catch(() => { });
+  if (lesson && lesson.id === l.id) { stopPlay(); lesson = l; audio = null; sel = null; renderMarkers(); updateSecBar(); renderRepo(); needDraw = true; }
+  return true;
+}
+async function finishLesson() {
+  if (!lesson || !audio) return;
+  const k = await ask('Finished with “' + lesson.name + '”? Remove the full recording (your regions stay), or keep it to capture more later.', ['Remove recording', 'Keep it', 'Cancel']);
+  if (k === 2) return;
+  if (k === 0) { try { await dbDel('lessonFiles', lesson.id); } catch (e) { } lesson.hasAudio = false; await dbPut('lessons', lesson).catch(() => { }); stopPlay(); audio = null; sel = null; renderMarkers(); updateSecBar(); needDraw = true; }
+  setStage('practise');
+}
+
+// ---------- stages
+function setStage(s) {
+  stage = s; lsSet('vpStage', s); closeMenu();
+  const cap = s === 'capture';
+  $('#sCap').classList.toggle('on', cap); $('#sPra').classList.toggle('on', !cap);
+  $('#capture').hidden = !cap; $('#practise').hidden = cap;
+  $('#topCap').style.display = cap ? 'contents' : 'none'; $('#topPra').style.display = cap ? 'none' : 'contents';
+  if (cap) { setTimeout(layout, 0); updateSecBar(); renderMarkers(); } else { if (play && play.segs[0].key === 'lesson') stopPlay(); renderList(); }
+  renderRepo();
+}
+
+// ---------- pitch keyboard: the note, then 1-2-3-4-5-4-3-2-1 of its major scale (A2–C4), synthesised piano
+const KB = { tempo: +lsGet('vpTempo', '80'), vol: +lsGet('vpVol', '70'), root: null, out: null, bus: null, noise: null };
+function kbEnsure() {
+  ensureAC();
+  if (!KB.bus) {
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 3; comp.attack.value = 0.005; comp.release.value = 0.2; comp.connect(ac.destination);
+    KB.bus = ac.createGain(); KB.bus.connect(comp);
+    const sr = ac.sampleRate, len = Math.round(sr * 1.8), ir = ac.createBuffer(2, len, sr);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); let lp = 0; for (let i = 0; i < len; i++) { const t = i / sr; lp += 0.35 * ((Math.random() * 2 - 1) - lp); d[i] = lp * Math.exp(-t / 0.42) * (t < 0.012 ? t / 0.012 : 1); } }
+    const conv = ac.createConvolver(); conv.buffer = ir; const wet = ac.createGain(); wet.gain.value = 0.22;
+    KB.bus.connect(conv); conv.connect(wet); wet.connect(comp);
+    const n = Math.round(sr * 0.04), nb = ac.createBuffer(1, n, sr), nd = nb.getChannelData(0); for (let i = 0; i < n; i++) nd[i] = Math.random() * 2 - 1; KB.noise = nb;
+  }
+  KB.bus.gain.setTargetAtTime(Math.pow(KB.vol / 100, 2), ac.currentTime, 0.01);
+}
+// stretched partials, hammer at 1/7.5 of the string, three strings on the low partials, 3 ms attack,
+// fast prompt drop then a long exponential aftersound (higher partials die sooner), tone darkens, felt knock
+function kbNote(midi, t, d, out) {
+  const f0 = 440 * Math.pow(2, (midi - 69) / 12), B = 0.00018 * Math.pow(2, (midi - 48) / 18);
+  const g = ac.createGain(); g.gain.setValueAtTime(0.085, t); g.gain.setTargetAtTime(0, t + d, 0.09);
+  const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 0.5;
+  lp.frequency.setValueAtTime(Math.min(10000, f0 * 16), t); lp.frequency.setTargetAtTime(Math.min(3500, f0 * 6), t + 0.02, 0.7);
+  lp.connect(g); g.connect(out);
+  const end = t + d + 0.7;
+  for (let n = 1; n <= 28; n++) {
+    const fn = n * f0 * Math.sqrt(1 + B * n * n); if (fn > 10000) break;
+    let a = Math.abs(Math.sin(Math.PI * n / 7.5)) / Math.pow(n, 0.85); if (n === 1) a *= 0.75;
+    const prompt = 0.12 / (1 + 0.25 * n), after = 3.2 * Math.pow(220 / f0, 0.4) / (1 + 0.1 * Math.pow(n - 1, 1.4));
+    const det = n <= 6 ? [-0.6 - Math.random() * 0.4, 0, 0.5 + Math.random() * 0.4] : [0];
+    for (const c of det) {
+      const o = ac.createOscillator(), pg = ac.createGain(), amp = a / det.length;
+      o.frequency.value = fn * Math.pow(2, c / 1200);
+      pg.gain.setValueAtTime(0, t); pg.gain.linearRampToValueAtTime(amp, t + 0.003);
+      pg.gain.setTargetAtTime(amp * 0.4, t + 0.003, prompt); pg.gain.setTargetAtTime(0, t + 0.003 + prompt * 2, after);
+      o.connect(pg); pg.connect(lp); o.start(t); o.stop(end);
+    }
+  }
+  const hs = ac.createBufferSource(); hs.buffer = KB.noise;
+  const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = Math.max(800, Math.min(3000, f0 * 5)); bp.Q.value = 0.8;
+  const hg = ac.createGain(); hg.gain.setValueAtTime(0.12, t); hg.gain.setTargetAtTime(0, t, 0.006);
+  hs.connect(bp); bp.connect(hg); hg.connect(g); hs.start(t); hs.stop(t + 0.04);
+}
+function kbStop() { if (KB.out) { const o = KB.out; o.gain.setTargetAtTime(0, ac.currentTime, 0.03); setTimeout(() => { try { o.disconnect(); } catch (e) { } }, 400); KB.out = null; } }
+function kbPlay(midi) {
+  kbEnsure(); kbStop(); KB.root = midi;
+  const beat = 60 / KB.tempo, t0 = ac.currentTime + 0.03, out = ac.createGain(); out.connect(KB.bus); KB.out = out;
+  kbNote(midi, t0, 2 * beat * 0.92, out);
+  const steps = [0, 2, 4, 5, 7, 5, 4, 2, 0];
+  steps.forEach((s, i) => kbNote(midi + s, t0 + (3 + i) * beat, (i === steps.length - 1 ? 2 : 1) * beat * 0.95, out));
+}
+function buildKeys() {
+  const box = $('#keys'), NAMES = ['C', 'C sharp', 'D', 'E flat', 'E', 'F', 'F sharp', 'G', 'A flat', 'A', 'B flat', 'B'], WW = 44, BW = 26;
+  let wi = 0;
+  for (let m = 45; m <= 60; m++) {
+    const pc = m % 12, black = [1, 3, 6, 8, 10].includes(pc), label = NAMES[pc] + ' ' + (Math.floor(m / 12) - 1);
+    const b = h('button', { class: black ? 'b' : 'w', 'aria-label': label, style: 'left:' + (black ? wi * WW - BW / 2 : wi * WW) + 'px',
+      onpointerdown: e => { e.preventDefault(); kbPlay(m); } });
+    box.append(b); if (!black) wi++;
+  }
+  box.style.width = wi * WW + 'px';
+  const t = $('#kTempo'), v = $('#kVol');
+  t.value = KB.tempo; v.value = KB.vol; $('#kTempoV').textContent = KB.tempo + ' bpm'; $('#kVolV').textContent = KB.vol + ' %';
+  t.oninput = () => { KB.tempo = +t.value; $('#kTempoV').textContent = KB.tempo + ' bpm'; lsSet('vpTempo', KB.tempo); };
+  v.oninput = () => { KB.vol = +v.value; $('#kVolV').textContent = KB.vol + ' %'; lsSet('vpVol', KB.vol); if (KB.bus) KB.bus.gain.setTargetAtTime(Math.pow(KB.vol / 100, 2), ac.currentTime, 0.02); };
+  $('#kReplay').onclick = () => { if (KB.root != null) kbPlay(KB.root); };
+  $('#kStop').onclick = () => { if (ac) kbStop(); };
+}
+function toggleKbd(on) { const k = $('#kbd'); k.hidden = on == null ? !k.hidden : !on; $('#bKbd').classList.toggle('on', !k.hidden); lsSet('vpKbd', k.hidden ? '0' : '1'); if (stage === 'capture') setTimeout(layout, 0); }
+
+// ---------- wiring
+$('#sCap').onclick = () => setStage('capture');
+$('#sPra').onclick = () => setStage('practise');
+$('#bLessons').onclick = showLessons;
+$('#lesClose').onclick = () => { $('#ovLessons').hidden = true; };
+$('#fileIn').onchange = e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; ensureAC(); openFile(f); };
+$('#bHelp').onclick = () => { $('#ovHelp').hidden = false; };
+$('#helpClose').onclick = () => { $('#ovHelp').hidden = true; };
+$('#bPlay').onclick = togglePlay;
+$('#bLoop').onclick = () => { loopOn = !loopOn; $('#bLoop').classList.toggle('on', loopOn); if (play && play.segs[0].key === 'lesson' && sel) { stopPlay(true); togglePlay(); } };
+$('#bMark').onclick = addMarker;
+$('#zIn').onclick = () => zoomBtn(2); $('#zOut').onclick = () => zoomBtn(0.5); $('#zFit').onclick = fit;
+$('#mkCopy').onclick = () => copyText(markerText());
+$('#mkShare').onclick = () => shareText(lesson.name, markerText());
+$('#bPlayList').onclick = playList;
+$('#bExport').onclick = exportMenu;
+$('#bKbd').onclick = () => toggleKbd();
+$('#repoSearch').oninput = () => renderRepo();
+$('#repoSearch').onkeydown = e => e.stopPropagation();
+document.addEventListener('keydown', e => {
+  const tg = e.target; if (tg && (tg.tagName === 'INPUT' || tg.tagName === 'TEXTAREA' || tg.tagName === 'SELECT')) return;
+  if (!$('#ovAsk').hidden || !$('#ovBusy').hidden) return;
+  const k = e.key, cmd = e.metaKey || e.ctrlKey;
+  if (cmd && (k === 'z' || k === 'Z') && stage === 'capture' && lesson) { e.preventDefault(); if (mkUndo.length) { lesson.markers = JSON.parse(mkUndo.pop()); saveSoon('lessons', lesson); renderMarkers(); needDraw = true; } return; }
+  if (cmd) return;
+  if (k === 'Escape') { if (!$('#ovHelp').hidden) $('#ovHelp').hidden = true; else if (!$('#ovLessons').hidden) $('#ovLessons').hidden = true; else { closeMenu(); sel = null; updateSecBar(); needDraw = true; } return; }
+  if (k === ' ') { e.preventDefault(); if (stage === 'capture') togglePlay(); else if (play) stopPlay(); else playList(); return; }
+  if (stage !== 'capture') return;
+  const act = { m: addMarker, M: addMarker, l: () => $('#bLoop').onclick(), L: () => $('#bLoop').onclick(), Enter: addRegion, '-': () => zoomBtn(0.5), '=': () => zoomBtn(2), '+': () => zoomBtn(2),
+    ArrowLeft: () => { seek(cursor - (e.altKey ? 0.1 : 1)); showT(cursor); }, ArrowRight: () => { seek(cursor + (e.altKey ? 0.1 : 1)); showT(cursor); }, Home: () => { view.t0 = 0; seek(0); } }[k];
+  if (act) { e.preventDefault(); act(); }
+});
+window.addEventListener('resize', () => setTimeout(() => { layout(); if (stage === 'practise') for (const c of document.querySelectorAll('.row canvas')) { const r = regionById(c.closest('.row').dataset.id); if (r) drawMini(c, r); } }, 60));
+document.addEventListener('visibilitychange', () => { if (document.hidden) { stopPlay(); if (ac) kbStop(); } });
+
+function frame() {
+  if (play) {
+    const p = playPos();
+    if (p.key === 'lesson') {
+      const vis = W / view.pps;
+      if (!gst && !pinch && !ovDrag && (p.pos > view.t0 + vis * 0.92 || p.pos < view.t0)) { view.t0 = p.pos - vis * 0.08; clampView(); }
+      updateTime(); needDraw = true;
+    } else if (stage === 'practise') {
+      const row = document.querySelector('.row[data-id="' + p.key + '"]');
+      if (row) { const r = regionById(p.key); drawMini(row.querySelector('canvas'), r); if (row !== frame.lastRow) { frame.lastRow = row; updateRowPlay(); if (play.list) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } }
+    }
+  } else if (frame.lastRow) { const row = frame.lastRow; frame.lastRow = null; const r = regionById(row.dataset.id); if (r && row.isConnected) drawMini(row.querySelector('canvas'), r); updateRowPlay(); }
+  if (needDraw && stage === 'capture') draw();
+  requestAnimationFrame(frame);
+}
+
+window.__vp = { get lesson() { return lesson; }, get audio() { return audio; }, get regions() { return regions; }, get days() { return days; },
+  get sel() { return sel; }, set sel(v) { sel = v; updateSecBar(); needDraw = true; }, get play() { return play; }, get viewDay() { return viewDay; },
+  seek, addMarker, addRegion, addToDay, setStage, regionBetweenMarkers, kbPlay, playRegion, finishLesson, wavBytes, view };
+
+// ---------- start
+(async () => {
+  buildKeys(); if (lsGet('vpKbd', '0') === '1') toggleKbd(true);
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => { }); } catch (e) { }
+  try {
+    regions = await dbAll('regions');
+    for (const d of await dbAll('days')) days[d.day] = d;
+    const ab = await dbDo('regionAudio', 'readonly', s => s.getAllKeys());
+    for (const id of ab || []) { const b = await dbGet('regionAudio', id); if (b) regionBlobs.set(id, b); }
+  } catch (e) { toast('Could not read the saved regions.'); }
+  setStage(stage); layout();
+  const last = lsGet('vpLesson', '');
+  if (last) await openStoredLesson(last, true);
+  updateSecBar(); renderMarkers(); renderRepo();
+  if (!lesson && !regions.length) showLessons();
+  requestAnimationFrame(frame);
+})();
+
+if ('serviceWorker' in navigator && location.protocol === 'https:') window.addEventListener('load', () => {
+  navigator.serviceWorker.register('sw.js').then(r => r.update().catch(() => { })).catch(() => { });
+});
+</script>
+</body>
+</html>
