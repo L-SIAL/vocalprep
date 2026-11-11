@@ -102,9 +102,9 @@ button.small { min-height: 36px; padding: 0 10px; font-size: 14px; }
 .kl { display: flex; align-items: center; gap: 8px; font-weight: 600; }
 .kl input { width: 130px; }
 .kv { min-width: 4.2em; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
-#keys { position: relative; height: 140px; align-self: center; flex-shrink: 0; }
-#keys .w { position: absolute; top: 0; height: 140px; border: 1px solid var(--faint); border-radius: 0 0 7px 7px; background: #fff; padding: 0; min-height: 0; touch-action: none; }
-#keys .b { position: absolute; top: 0; height: 86px; border: 1px solid #000; border-radius: 0 0 5px 5px; background: var(--ink); padding: 0; min-height: 0; z-index: 2; touch-action: none; }
+#keys { position: relative; height: 112px; align-self: center; flex-shrink: 0; }
+#keys .w { position: absolute; top: 0; height: 112px; border: 1px solid #C9C3B8; border-radius: 0 0 4px 4px; background: #fff; padding: 0; min-height: 0; touch-action: none; }
+#keys .b { position: absolute; top: 0; height: 70px; border: none; border-radius: 0 0 3px 3px; background: var(--ink); padding: 0; min-height: 0; z-index: 2; touch-action: none; }
 input[type=range] { width: 100%; height: 32px; accent-color: #1E1D1B; }
 
 /* overlays */
@@ -191,7 +191,7 @@ input[type=range] { width: 100%; height: 32px; accent-color: #1E1D1B; }
     </div>
   </div>
 </div>
-<span class="ver">v2</span>
+<span class="ver">v3</span>
 
 <div class="ov" id="ovLessons" hidden><div class="card">
   <h2>Lessons</h2>
@@ -221,7 +221,7 @@ input[type=range] { width: 100%; height: 32px; accent-color: #1E1D1B; }
     <li>The chips at the top show earlier days, so you can see what you used.</li>
     <li><b>Export ▾</b> shares the regions (WAV) or your notes, e.g. to Notes or Files.</li>
   </ol>
-  <p><b>Keyboard</b> (E2 to C4): choose what a key plays. <b>Note</b> sounds while you hold the key. <b>5 notes up &amp; down</b> plays the note, then the major scale up to the fifth and back down, at the Tempo set.</p>
+  <p><b>Keyboard</b> (E2 to G4): choose what a key plays. <b>Note</b> sounds while you hold the key. <b>5 notes up &amp; down</b> plays the note, then the major scale up to the fifth and back down, at the Tempo set.</p>
   <p><b>Backup ▾</b> (Repository): <b>Back up to Dropbox…</b> saves every region (WAV) and one file with your names, notes and day lists: choose Save to Files › Dropbox › a folder. <b>Restore from a backup…</b>: pick the .json and the .wav files in that folder (Select › Select All).</p>
   <p>Pinch to zoom the lesson waveform, two fingers to scroll, or drag along the strip at the top. Keys: Space play/stop · M marker · L loop · Return add the region · Esc clear.</p>
   <div class="btns"><button id="helpClose" class="strong">Close</button></div>
@@ -511,9 +511,27 @@ const FOUT = FIN.slice().reverse();
 const fadeAt = x => (Math.pow(1000, x) - 1) / 999;
 function ensureAC() {
   try { if (navigator.audioSession && navigator.audioSession.type !== 'playback') navigator.audioSession.type = 'playback'; } catch (e) { }
+  if (ac && ac.state === 'closed') rebuildAudio();
   if (!ac) { const AC = window.AudioContext || window.webkitAudioContext; ac = new AC({ latencyHint: 'interactive' }); master = ac.createGain(); master.connect(ac.destination); }
   if (ac.state !== 'running') ac.resume().catch(() => { });
   return ac;
+}
+// v3: iPadOS can stop the app's sound (screen lock, another app, headphones) and not give it back. After each play or
+// key, check that the audio clock really moves; if it hasn't moved after 0.9 s, build a new audio engine and play
+// again once. (The iPad clock moves in chunks, so this looks at 0.9 s, not one screen frame.)
+function rebuildAudio() {
+  try { if (ac) ac.close(); } catch (e) { }
+  ac = null; master = null;
+  if (typeof KB !== 'undefined') { KB.bus = null; KB.out = null; KB.held.clear(); }
+}
+function watchAudio(retry) {
+  const a = ac, t0 = a.currentTime;
+  setTimeout(() => {
+    if (ac !== a || a.currentTime - t0 > 0.15) return;
+    const wasPlaying = !!play; stopPlay(true); rebuildAudio();
+    if (retry) { retry(); toast('The iPad had stopped the sound. It is back.'); }
+    else if (wasPlaying) playChanged();
+  }, 900);
 }
 function srcSeg(P, buf, from, to, at) {     // one faded piece of a buffer at ac time `at`
   const d = to - from; if (d < 0.002) return;
@@ -536,7 +554,9 @@ function startPlay(segs, opts = {}) {
     if (P.loop) { while (P.next - ac.currentTime < 0.6) { const s = P.segs[0]; srcSeg(P, s.buf, s.from, s.to, P.next); P.next += P.loopLen; } }
     else if (ac.currentTime - P.when > P.total + 0.08) stopPlay();
   }, 60);
+  P.list = !!opts.list;
   play = P; playChanged();
+  if (!opts.retried) watchAudio(() => startPlay(segs, Object.assign({}, opts, { retried: true })));
 }
 function stopPlay(quiet) {
   if (!play) return; const P = play; play = null; clearInterval(P.timer);
@@ -702,7 +722,7 @@ async function playList() {
   const segs = [];
   try { for (const r of items) { const buf = await regionBuf(r); segs.push({ key: r.id, buf, from: 0, to: buf.duration }); } }
   catch (e) { busy(''); toast(e.message); return; }
-  busy(''); startPlay(segs, { gap: 2 }); play.list = true; playChanged();
+  busy(''); startPlay(segs, { gap: 2, list: true });
 }
 
 // ---------- days (stage 2)
@@ -991,14 +1011,14 @@ function setStage(s) {
   renderRepo();
 }
 
-// ---------- pitch keyboard (E2–C4), synthesised piano
+// ---------- pitch keyboard (E2–G4), synthesised piano
 // v2: what a key plays is a pattern; default "Note" (sounds while held, dampers on release). More patterns can be added
 // to PATTERNS: steps are semitones from the key, one beat each, after the key's note (2 beats) and a beat's rest.
 const PATTERNS = [
   { id: 'note', name: 'Note' },
   { id: 'five', name: '5 notes up & down', steps: [0, 2, 4, 5, 7, 5, 4, 2, 0] },
 ];
-const KB_LO = 40, KB_HI = 60;   // v2: from E2 (was A2) to C4
+const KB_LO = 40, KB_HI = 67;   // v2: from E2 to G4 (v1: A2–C4)
 const KB = { tempo: +lsGet('vpTempo', '80'), vol: +lsGet('vpVol', '70'), pattern: lsGet('vpPattern', 'note'), root: null, out: null, bus: null, noise: null, held: new Map() };
 if (!PATTERNS.some(p => p.id === KB.pattern)) KB.pattern = 'note';
 function kbEnsure() {
@@ -1052,9 +1072,10 @@ function kbStop() {
   for (const hnd of KB.held.values()) hnd.release(); KB.held.clear();
   if (KB.out) { const o = KB.out; o.gain.setTargetAtTime(0, ac.currentTime, 0.03); setTimeout(() => { try { o.disconnect(); } catch (e) { } }, 400); KB.out = null; }
 }
-function kbPattern(midi) {      // the key's note (2 beats), a beat's rest, then the pattern's steps; the last held 2 beats
+function kbPattern(midi, retried) {      // the key's note (2 beats), a beat's rest, then the pattern's steps; the last held 2 beats
   const P = PATTERNS.find(p => p.id === KB.pattern);
   kbEnsure(); kbStop(); KB.root = midi;
+  if (!retried) watchAudio(() => kbPattern(midi, true));
   const beat = 60 / KB.tempo, t0 = ac.currentTime + 0.03, out = ac.createGain(); out.connect(KB.bus); KB.out = out;
   if (!P || !P.steps) { kbNote(midi, t0, 2 * beat, out); return; }
   kbNote(midi, t0, 2 * beat * 0.92, out);
@@ -1064,16 +1085,17 @@ function keyDown(e, m) {
   e.preventDefault(); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) { }
   if (KB.pattern === 'note') {
     kbEnsure(); KB.root = m;
+    watchAudio(() => kbPattern(m, true));
     const old = KB.held.get(e.pointerId); if (old) old.release();
     KB.held.set(e.pointerId, kbNote(m, ac.currentTime + 0.005, 12, KB.bus));
   } else kbPattern(m);
 }
 function keyUp(e) { const hnd = KB.held.get(e.pointerId); if (hnd) { hnd.release(); KB.held.delete(e.pointerId); } }
-function buildKeys() {      // key width fits the space (13 white keys)
+function buildKeys() {      // key width fits the space (17 white keys); v2: finer keys
   const box = $('#keys'); box.textContent = '';
   const NAMES = ['C', 'C sharp', 'D', 'E flat', 'E', 'F', 'F sharp', 'G', 'A flat', 'A', 'B flat', 'B'];
   let whites = 0; for (let m = KB_LO; m <= KB_HI; m++) if (![1, 3, 6, 8, 10].includes(m % 12)) whites++;
-  const avail = ($('#kbd').clientWidth || 600) - 32, WW = clamp(Math.floor(avail / whites), 28, 48), BW = Math.round(WW * 0.6);
+  const avail = ($('#kbd').clientWidth || 600) - 32, WW = clamp(Math.floor(avail / whites), 22, 34), BW = Math.round(WW * 0.58);
   let wi = 0;
   for (let m = KB_LO; m <= KB_HI; m++) {
     const black = [1, 3, 6, 8, 10].includes(m % 12);
@@ -1189,7 +1211,8 @@ document.addEventListener('keydown', e => {
   if (act) { e.preventDefault(); act(); }
 });
 window.addEventListener('resize', () => setTimeout(() => { layout(); if (!$('#kbd').hidden) buildKeys(); if (stage === 'practise') for (const c of document.querySelectorAll('.row canvas')) { const r = regionById(c.closest('.row').dataset.id); if (r) drawMini(c, r); } }, 60));
-document.addEventListener('visibilitychange', () => { if (document.hidden) { stopPlay(); if (ac) kbStop(); } });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { stopPlay(); if (ac) kbStop(); } else if (ac && ac.state !== 'running') ac.resume().catch(() => { }); });
+window.addEventListener('pageshow', () => { if (ac && ac.state !== 'running') ac.resume().catch(() => { }); });
 
 function frame() {
   if (play) {
@@ -1209,7 +1232,7 @@ function frame() {
 
 window.__vp = { get lesson() { return lesson; }, get audio() { return audio; }, get regions() { return regions; }, get days() { return days; },
   get sel() { return sel; }, set sel(v) { sel = v; updateSecBar(); needDraw = true; }, get play() { return play; }, get viewDay() { return viewDay; },
-  seek, addMarker, addRegion, addToDay, setStage, regionBetweenMarkers, kbPattern, KB, PATTERNS, backup, restore, playRegion, finishLesson, wavBytes, view };
+  seek, addMarker, addRegion, addToDay, rebuildAudio, get ac() { return ac; }, setStage, regionBetweenMarkers, kbPattern, KB, PATTERNS, backup, restore, playRegion, finishLesson, wavBytes, view };
 
 // ---------- start
 (async () => {

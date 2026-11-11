@@ -42,3 +42,12 @@ Grew out of the LH Audio Editor v1 (spectral-score PR #2, not merged).
 - Opening a recording sets the waveform and the lesson together (a tap in between could hit an empty lesson).
 - Tested headless: Note hold/release, pattern, backup (captured share files), restore into an empty app (2 regions,
   note and day list back), no errors.
+
+## v3 (11 Nov 2026)
+- Keyboard E2–G4 (`KB_HI` 67) with finer keys (white at most 34 px wide and 112 px tall, black 70 px, thinner edges).
+  (This was pushed to the v2 branch after v2 had been merged, so it ships here.)
+- **Sound recovery** (as in the Spectral Palette v72/v77): `watchAudio(retry)` runs after every play (`startPlay`) and
+  key (`keyDown`, `kbPattern`). If the audio clock hasn't moved 0.15 s after 0.9 s, `rebuildAudio()` closes the
+  AudioContext and clears the keyboard bus; the play or key is retried once on a new context, with a toast. Decoded
+  region buffers are reused (AudioBuffers aren't tied to a context). The context is also resumed on visibilitychange
+  (visible) and pageshow. `ensureAC` rebuilds a closed context. List play now passes `list: true` to `startPlay`.
