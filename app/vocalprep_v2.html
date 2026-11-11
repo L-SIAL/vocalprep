@@ -97,13 +97,14 @@ button.small { min-height: 36px; padding: 0 10px; font-size: 14px; }
 .sidefoot button { flex: 1 1 auto; }
 
 /* keyboard dock */
-#kbd { display: flex; align-items: center; gap: 18px; padding: 12px 16px; background: var(--panel); border-top: 1px solid var(--line); flex-wrap: wrap; }
-#kbd[hidden] { display: none; }
-#keys { position: relative; height: 150px; flex-shrink: 0; }
-#keys .w { position: absolute; top: 0; width: 44px; height: 150px; border: 1px solid var(--faint); border-radius: 0 0 8px 8px; background: #fff; padding: 0; min-height: 0; touch-action: none; }
-#keys .b { position: absolute; top: 0; width: 26px; height: 92px; border: 1px solid #000; border-radius: 0 0 6px 6px; background: var(--ink); padding: 0; min-height: 0; z-index: 2; touch-action: none; }
-.kctl { display: flex; flex-direction: column; gap: 10px; flex: 1 1 170px; min-width: 170px; }
-.kctl label { font-weight: 600; display: flex; justify-content: space-between; }
+#kbd { display: flex; flex-direction: column; gap: 10px; padding: 10px 16px 12px; background: var(--panel); border-top: 1px solid var(--line); }
+.krow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.kl { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.kl input { width: 130px; }
+.kv { min-width: 4.2em; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
+#keys { position: relative; height: 140px; align-self: center; flex-shrink: 0; }
+#keys .w { position: absolute; top: 0; height: 140px; border: 1px solid var(--faint); border-radius: 0 0 7px 7px; background: #fff; padding: 0; min-height: 0; touch-action: none; }
+#keys .b { position: absolute; top: 0; height: 86px; border: 1px solid #000; border-radius: 0 0 5px 5px; background: var(--ink); padding: 0; min-height: 0; z-index: 2; touch-action: none; }
 input[type=range] { width: 100%; height: 32px; accent-color: #1E1D1B; }
 
 /* overlays */
@@ -170,27 +171,27 @@ input[type=range] { width: 100%; height: 32px; accent-color: #1E1D1B; }
         <div id="list"></div>
       </div>
       <div id="kbd" hidden>
-        <div style="display:flex;flex-direction:column;gap:6px;width:150px">
-          <b>Pitch keyboard</b>
-          <span class="muted" style="font-size:13px;line-height:1.35">Touch a key: the note, then the major scale up to the fifth and back down.</span>
-          <span style="display:flex;gap:6px"><button class="small" id="kReplay">Replay</button><button class="small" id="kStop">Stop</button></span>
+        <div class="krow">
+          <span class="grp" id="kPat" role="group" aria-label="What a key plays"></span>
+          <button class="small" id="kReplay">Replay</button><button class="small" id="kStop">Stop</button>
+          <span class="sp"></span>
+          <label class="kl" for="kTempo">Tempo <input id="kTempo" type="range" min="40" max="160" step="1"><span id="kTempoV" class="kv"></span></label>
+          <label class="kl" for="kVol">Volume <input id="kVol" type="range" min="0" max="100" step="1"><span id="kVolV" class="kv"></span></label>
         </div>
         <div id="keys"></div>
-        <div class="kctl">
-          <div><label for="kTempo"><span>Tempo</span><span id="kTempoV">80 bpm</span></label><input id="kTempo" type="range" min="40" max="160" step="1" value="80"></div>
-          <div><label for="kVol"><span>Volume</span><span id="kVolV">70 %</span></label><input id="kVol" type="range" min="0" max="100" step="1" value="70"></div>
-        </div>
       </div>
     </div>
     <div id="side">
-      <div class="phead"><b style="font-size:17px">Repository</b><span class="muted" id="repoCount"></span></div>
+      <div class="phead"><b style="font-size:17px">Repository</b><span class="sp"></span><button class="small" id="bBackup">Backup ▾</button></div>
+      <div class="muted" id="repoCount" style="padding:0 16px 8px;font-size:13px"></div>
+      <input id="restoreIn" type="file" multiple accept=".json,.wav,application/json,audio/wav,audio/x-wav" hidden>
       <input id="repoSearch" placeholder="Search names and notes" aria-label="Search the repository">
       <div class="scroll" id="repo"></div>
       <div class="sidefoot" id="sideFoot"></div>
     </div>
   </div>
 </div>
-<span class="ver">v1</span>
+<span class="ver">v2</span>
 
 <div class="ov" id="ovLessons" hidden><div class="card">
   <h2>Lessons</h2>
@@ -220,7 +221,8 @@ input[type=range] { width: 100%; height: 32px; accent-color: #1E1D1B; }
     <li>The chips at the top show earlier days, so you can see what you used.</li>
     <li><b>Export ▾</b> shares the regions (WAV) or your notes, e.g. to Notes or Files.</li>
   </ol>
-  <p><b>Keyboard:</b> touch a key for the note, then the major scale up to the fifth and back down. Tempo and Volume beside it.</p>
+  <p><b>Keyboard</b> (E2 to C4): choose what a key plays. <b>Note</b> sounds while you hold the key. <b>5 notes up &amp; down</b> plays the note, then the major scale up to the fifth and back down, at the Tempo set.</p>
+  <p><b>Backup ▾</b> (Repository): <b>Back up to Dropbox…</b> saves every region (WAV) and one file with your names, notes and day lists: choose Save to Files › Dropbox › a folder. <b>Restore from a backup…</b>: pick the .json and the .wav files in that folder (Select › Select All).</p>
   <p>Pinch to zoom the lesson waveform, two fingers to scroll, or drag along the strip at the top. Keys: Space play/stop · M marker · L loop · Return add the region · Esc clear.</p>
   <div class="btns"><button id="helpClose" class="strong">Close</button></div>
 </div></div>
@@ -661,12 +663,13 @@ function wavBytes(chs, sr, bits) {
   return buf;
 }
 async function shareFiles(files) {
-  try { if (navigator.canShare && navigator.share && navigator.canShare({ files })) { await navigator.share({ files }); return; } }
+  try { if (navigator.canShare && navigator.share && navigator.canShare({ files })) { await navigator.share({ files }); return true; } }
   catch (e) {
-    if (e && e.name === 'AbortError') return;
-    if (e && e.name === 'NotAllowedError') { if ((await ask('Ready to share ' + (files.length > 1 ? files.length + ' files.' : '“' + files[0].name + '”.'), ['Share', 'Cancel'])) === 0) return shareFiles(files); return; }
+    if (e && e.name === 'AbortError') return false;
+    if (e && e.name === 'NotAllowedError') { if ((await ask('Ready to share ' + (files.length > 1 ? files.length + ' files.' : '“' + files[0].name + '”.'), ['Share', 'Cancel'])) === 0) return shareFiles(files); return false; }
   }
   for (const f of files) { const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 5000); }
+  return true;
 }
 function regionFile(r, name) { const b = regionBlobs.get(r.id); return b ? new File([b], safeName(name || r.name) + '.wav', { type: 'audio/wav' }) : null; }
 
@@ -930,10 +933,9 @@ async function openFile(file) {
     if (!l) l = newLesson(file, buf);
     l.hasAudio = true;
     busy('Drawing the waveform…'); await new Promise(r => setTimeout(r, 20));
-    setAudio(buf);
     try { await dbPut('lessonFiles', blob, l.id); await dbPut('lessons', l); }
     catch (e) { toast('Could not keep the recording on this iPad (storage full?). It works until the app is closed.'); }
-    setStage('capture'); loadLesson(l);
+    setAudio(buf); setStage('capture'); loadLesson(l);   // v2: audio and lesson set together
   } catch (e) { busy(''); await ask('Could not open “' + file.name + '”: ' + (e && e.message ? e.message : 'unknown format') + '. Try an m4a, wav, mp3 or aif file.', ['OK']); }
   finally { busy(''); }
 }
@@ -989,8 +991,16 @@ function setStage(s) {
   renderRepo();
 }
 
-// ---------- pitch keyboard: the note, then 1-2-3-4-5-4-3-2-1 of its major scale (A2–C4), synthesised piano
-const KB = { tempo: +lsGet('vpTempo', '80'), vol: +lsGet('vpVol', '70'), root: null, out: null, bus: null, noise: null };
+// ---------- pitch keyboard (E2–C4), synthesised piano
+// v2: what a key plays is a pattern; default "Note" (sounds while held, dampers on release). More patterns can be added
+// to PATTERNS: steps are semitones from the key, one beat each, after the key's note (2 beats) and a beat's rest.
+const PATTERNS = [
+  { id: 'note', name: 'Note' },
+  { id: 'five', name: '5 notes up & down', steps: [0, 2, 4, 5, 7, 5, 4, 2, 0] },
+];
+const KB_LO = 40, KB_HI = 60;   // v2: from E2 (was A2) to C4
+const KB = { tempo: +lsGet('vpTempo', '80'), vol: +lsGet('vpVol', '70'), pattern: lsGet('vpPattern', 'note'), root: null, out: null, bus: null, noise: null, held: new Map() };
+if (!PATTERNS.some(p => p.id === KB.pattern)) KB.pattern = 'note';
 function kbEnsure() {
   ensureAC();
   if (!KB.bus) {
@@ -1005,9 +1015,10 @@ function kbEnsure() {
   KB.bus.gain.setTargetAtTime(Math.pow(KB.vol / 100, 2), ac.currentTime, 0.01);
 }
 // stretched partials, hammer at 1/7.5 of the string, three strings on the low partials, 3 ms attack,
-// fast prompt drop then a long exponential aftersound (higher partials die sooner), tone darkens, felt knock
+// fast prompt drop then a long exponential aftersound (higher partials die sooner), tone darkens, felt knock.
+// Returns a handle whose release() drops the dampers now.
 function kbNote(midi, t, d, out) {
-  const f0 = 440 * Math.pow(2, (midi - 69) / 12), B = 0.00018 * Math.pow(2, (midi - 48) / 18);
+  const f0 = 440 * Math.pow(2, (midi - 69) / 12), B = 0.00018 * Math.pow(2, (midi - 48) / 18), oscs = [];
   const g = ac.createGain(); g.gain.setValueAtTime(0.085, t); g.gain.setTargetAtTime(0, t + d, 0.09);
   const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 0.5;
   lp.frequency.setValueAtTime(Math.min(10000, f0 * 16), t); lp.frequency.setTargetAtTime(Math.min(3500, f0 * 6), t + 0.02, 0.7);
@@ -1023,40 +1034,125 @@ function kbNote(midi, t, d, out) {
       o.frequency.value = fn * Math.pow(2, c / 1200);
       pg.gain.setValueAtTime(0, t); pg.gain.linearRampToValueAtTime(amp, t + 0.003);
       pg.gain.setTargetAtTime(amp * 0.4, t + 0.003, prompt); pg.gain.setTargetAtTime(0, t + 0.003 + prompt * 2, after);
-      o.connect(pg); pg.connect(lp); o.start(t); o.stop(end);
+      o.connect(pg); pg.connect(lp); o.start(t); o.stop(end); oscs.push(o);
     }
   }
   const hs = ac.createBufferSource(); hs.buffer = KB.noise;
   const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = Math.max(800, Math.min(3000, f0 * 5)); bp.Q.value = 0.8;
   const hg = ac.createGain(); hg.gain.setValueAtTime(0.12, t); hg.gain.setTargetAtTime(0, t, 0.006);
   hs.connect(bp); bp.connect(hg); hg.connect(g); hs.start(t); hs.stop(t + 0.04);
+  return { release() {
+    const now = ac.currentTime;
+    if (g.gain.cancelAndHoldAtTime) g.gain.cancelAndHoldAtTime(now); else { g.gain.cancelScheduledValues(now); g.gain.setValueAtTime(0.085, now); }
+    g.gain.setTargetAtTime(0, now, 0.09);
+    for (const o of oscs) { try { o.stop(now + 0.8); } catch (e) { } }
+  } };
 }
-function kbStop() { if (KB.out) { const o = KB.out; o.gain.setTargetAtTime(0, ac.currentTime, 0.03); setTimeout(() => { try { o.disconnect(); } catch (e) { } }, 400); KB.out = null; } }
-function kbPlay(midi) {
+function kbStop() {
+  for (const hnd of KB.held.values()) hnd.release(); KB.held.clear();
+  if (KB.out) { const o = KB.out; o.gain.setTargetAtTime(0, ac.currentTime, 0.03); setTimeout(() => { try { o.disconnect(); } catch (e) { } }, 400); KB.out = null; }
+}
+function kbPattern(midi) {      // the key's note (2 beats), a beat's rest, then the pattern's steps; the last held 2 beats
+  const P = PATTERNS.find(p => p.id === KB.pattern);
   kbEnsure(); kbStop(); KB.root = midi;
   const beat = 60 / KB.tempo, t0 = ac.currentTime + 0.03, out = ac.createGain(); out.connect(KB.bus); KB.out = out;
+  if (!P || !P.steps) { kbNote(midi, t0, 2 * beat, out); return; }
   kbNote(midi, t0, 2 * beat * 0.92, out);
-  const steps = [0, 2, 4, 5, 7, 5, 4, 2, 0];
-  steps.forEach((s, i) => kbNote(midi + s, t0 + (3 + i) * beat, (i === steps.length - 1 ? 2 : 1) * beat * 0.95, out));
+  P.steps.forEach((s, i) => kbNote(midi + s, t0 + (3 + i) * beat, (i === P.steps.length - 1 ? 2 : 1) * beat * 0.95, out));
 }
-function buildKeys() {
-  const box = $('#keys'), NAMES = ['C', 'C sharp', 'D', 'E flat', 'E', 'F', 'F sharp', 'G', 'A flat', 'A', 'B flat', 'B'], WW = 44, BW = 26;
+function keyDown(e, m) {
+  e.preventDefault(); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) { }
+  if (KB.pattern === 'note') {
+    kbEnsure(); KB.root = m;
+    const old = KB.held.get(e.pointerId); if (old) old.release();
+    KB.held.set(e.pointerId, kbNote(m, ac.currentTime + 0.005, 12, KB.bus));
+  } else kbPattern(m);
+}
+function keyUp(e) { const hnd = KB.held.get(e.pointerId); if (hnd) { hnd.release(); KB.held.delete(e.pointerId); } }
+function buildKeys() {      // key width fits the space (13 white keys)
+  const box = $('#keys'); box.textContent = '';
+  const NAMES = ['C', 'C sharp', 'D', 'E flat', 'E', 'F', 'F sharp', 'G', 'A flat', 'A', 'B flat', 'B'];
+  let whites = 0; for (let m = KB_LO; m <= KB_HI; m++) if (![1, 3, 6, 8, 10].includes(m % 12)) whites++;
+  const avail = ($('#kbd').clientWidth || 600) - 32, WW = clamp(Math.floor(avail / whites), 28, 48), BW = Math.round(WW * 0.6);
   let wi = 0;
-  for (let m = 45; m <= 60; m++) {
-    const pc = m % 12, black = [1, 3, 6, 8, 10].includes(pc), label = NAMES[pc] + ' ' + (Math.floor(m / 12) - 1);
-    const b = h('button', { class: black ? 'b' : 'w', 'aria-label': label, style: 'left:' + (black ? wi * WW - BW / 2 : wi * WW) + 'px',
-      onpointerdown: e => { e.preventDefault(); kbPlay(m); } });
-    box.append(b); if (!black) wi++;
+  for (let m = KB_LO; m <= KB_HI; m++) {
+    const black = [1, 3, 6, 8, 10].includes(m % 12);
+    box.append(h('button', { class: black ? 'b' : 'w', 'aria-label': NAMES[m % 12] + ' ' + (Math.floor(m / 12) - 1),
+      style: 'left:' + (black ? wi * WW - BW / 2 : wi * WW) + 'px;width:' + (black ? BW : WW) + 'px',
+      onpointerdown: e => keyDown(e, m), onpointerup: keyUp, onpointercancel: keyUp, onlostpointercapture: keyUp }));
+    if (!black) wi++;
   }
   box.style.width = wi * WW + 'px';
+}
+function renderPatterns() {
+  const g = $('#kPat'); g.textContent = '';
+  for (const p of PATTERNS) g.append(h('button', { class: 'small' + (p.id === KB.pattern ? ' on' : ''), onclick: () => { KB.pattern = p.id; lsSet('vpPattern', p.id); renderPatterns(); } }, p.name));
+  $('#kTempo').disabled = KB.pattern === 'note';
+}
+function setupKbd() {
+  renderPatterns();
   const t = $('#kTempo'), v = $('#kVol');
   t.value = KB.tempo; v.value = KB.vol; $('#kTempoV').textContent = KB.tempo + ' bpm'; $('#kVolV').textContent = KB.vol + ' %';
   t.oninput = () => { KB.tempo = +t.value; $('#kTempoV').textContent = KB.tempo + ' bpm'; lsSet('vpTempo', KB.tempo); };
   v.oninput = () => { KB.vol = +v.value; $('#kVolV').textContent = KB.vol + ' %'; lsSet('vpVol', KB.vol); if (KB.bus) KB.bus.gain.setTargetAtTime(Math.pow(KB.vol / 100, 2), ac.currentTime, 0.02); };
-  $('#kReplay').onclick = () => { if (KB.root != null) kbPlay(KB.root); };
+  $('#kReplay').onclick = () => { if (KB.root != null) kbPattern(KB.root); };
   $('#kStop').onclick = () => { if (ac) kbStop(); };
 }
-function toggleKbd(on) { const k = $('#kbd'); k.hidden = on == null ? !k.hidden : !on; $('#bKbd').classList.toggle('on', !k.hidden); lsSet('vpKbd', k.hidden ? '0' : '1'); if (stage === 'capture') setTimeout(layout, 0); }
+function toggleKbd(on) {
+  const k = $('#kbd'); k.hidden = on == null ? !k.hidden : !on; $('#bKbd').classList.toggle('on', !k.hidden); lsSet('vpKbd', k.hidden ? '0' : '1');
+  if (!k.hidden) buildKeys();
+  if (stage === 'capture') setTimeout(layout, 0);
+}
+
+// ---------- backup to Dropbox (through Save to Files) and restore
+// v2: the backup is the regions' WAV files plus "VocalPrep backup <date>.json" (names, notes, singing starts,
+// small waveforms, the day lists). Each WAV is named "<region name> - <id>.wav" so a restore can match them.
+function backupFileName(r) { return safeName(r.name) + ' - ' + r.id + '.wav'; }
+function backupMenu(e) {
+  closeMenu(); const rc = e.currentTarget.getBoundingClientRect(), last = lsGet('vpLastBackup', '');
+  const item = (label, fn, dis) => h('button', { disabled: dis, onclick: () => { closeMenu(); fn(); } }, label);
+  menuEl = h('div', { class: 'menu', style: 'top:' + (rc.bottom + 4) + 'px;left:' + Math.max(8, rc.right - 260) + 'px' },
+    item('Back up to Dropbox…', backup, !regions.length),
+    item('Restore from a backup…', () => $('#restoreIn').click()),
+    h('div', { class: 'muted', style: 'font-size:13px;padding:6px 14px' }, last ? 'Last backup: ' + dayLabel(last, true) : 'Not backed up yet'));
+  document.body.append(menuEl);
+  setTimeout(() => document.addEventListener('pointerdown', function off(ev) { if (menuEl && !menuEl.contains(ev.target)) closeMenu(); document.removeEventListener('pointerdown', off, true); }, true), 0);
+}
+async function backup() {
+  const n = regions.filter(r => regionBlobs.has(r.id)).length;
+  if ((await ask('Back up ' + n + (n === 1 ? ' region' : ' regions') + ' and your notes. On the next screen: Save to Files › Dropbox › a folder such as "VocalPrep backup" › Save.', ['Continue', 'Cancel'])) !== 0) return;
+  const meta = { format: 'vocalprep-backup', version: 1, saved: new Date().toISOString(), regions: [], days: Object.values(days) };
+  const files = [];
+  for (const r of regions) { const b = regionBlobs.get(r.id); if (!b) continue; const fn = backupFileName(r); meta.regions.push(Object.assign({}, r, { file: fn })); files.push(new File([b], fn, { type: 'audio/wav' })); }
+  files.unshift(new File([JSON.stringify(meta)], 'VocalPrep backup ' + dayKey() + '.json', { type: 'application/json' }));
+  if (await shareFiles(files)) { lsSet('vpLastBackup', dayKey()); toast('Backed up ' + meta.regions.length + ' regions.'); }
+}
+async function restore(list) {
+  const files = [...list]; if (!files.length) return;
+  const js = files.filter(f => /\.json$/i.test(f.name)).sort((a, b) => b.name.localeCompare(a.name))[0];
+  if (!js) { await ask('Choose the backup’s .json file together with its .wav files. In the file picker tap Select, then Select All, in your backup folder.', ['OK']); return; }
+  busy('Restoring…');
+  let meta; try { meta = JSON.parse(await js.text()); } catch (e) { meta = null; }
+  if (!meta || meta.format !== 'vocalprep-backup') { busy(''); await ask('“' + js.name + '” is not a VocalPrep backup.', ['OK']); return; }
+  const byName = new Map(files.map(f => [f.name, f]));
+  let added = 0, had = 0, missing = 0;
+  for (const rr of meta.regions || []) {
+    if (regions.some(r => r.id === rr.id)) { had++; continue; }
+    const f = byName.get(rr.file); if (!f) { missing++; continue; }
+    const r = Object.assign({}, rr); delete r.file;
+    const blob = new Blob([await f.arrayBuffer()], { type: 'audio/wav' });
+    try { await dbPut('regionAudio', blob, r.id); await dbPut('regions', r); } catch (e) { busy(''); toast('Storage full: restored ' + added + ' regions.'); return; }
+    regions.push(r); regionBlobs.set(r.id, blob); added++;
+  }
+  for (const d of meta.days || []) {
+    const mine = dayObj(d.day); let ch = false;
+    for (const id of d.items || []) if (!mine.items.includes(id) && regions.some(r => r.id === id)) { mine.items.push(id); ch = true; }
+    if (ch) await dbPut('days', mine).catch(() => { });
+  }
+  busy('');
+  renderRepo(); if (stage === 'practise') renderList();
+  await ask('Restored ' + added + (added === 1 ? ' region' : ' regions') + (had ? ', ' + had + ' were already here' : '') + (missing ? ', ' + missing + ' audio files were not chosen' : '') + '.', ['OK']);
+}
 
 // ---------- wiring
 $('#sCap').onclick = () => setStage('capture');
@@ -1075,6 +1171,8 @@ $('#mkShare').onclick = () => shareText(lesson.name, markerText());
 $('#bPlayList').onclick = playList;
 $('#bExport').onclick = exportMenu;
 $('#bKbd').onclick = () => toggleKbd();
+$('#bBackup').onclick = backupMenu;
+$('#restoreIn').onchange = e => { const f = e.target.files; restore(f).finally(() => { e.target.value = ''; }); };
 $('#repoSearch').oninput = () => renderRepo();
 $('#repoSearch').onkeydown = e => e.stopPropagation();
 document.addEventListener('keydown', e => {
@@ -1090,7 +1188,7 @@ document.addEventListener('keydown', e => {
     ArrowLeft: () => { seek(cursor - (e.altKey ? 0.1 : 1)); showT(cursor); }, ArrowRight: () => { seek(cursor + (e.altKey ? 0.1 : 1)); showT(cursor); }, Home: () => { view.t0 = 0; seek(0); } }[k];
   if (act) { e.preventDefault(); act(); }
 });
-window.addEventListener('resize', () => setTimeout(() => { layout(); if (stage === 'practise') for (const c of document.querySelectorAll('.row canvas')) { const r = regionById(c.closest('.row').dataset.id); if (r) drawMini(c, r); } }, 60));
+window.addEventListener('resize', () => setTimeout(() => { layout(); if (!$('#kbd').hidden) buildKeys(); if (stage === 'practise') for (const c of document.querySelectorAll('.row canvas')) { const r = regionById(c.closest('.row').dataset.id); if (r) drawMini(c, r); } }, 60));
 document.addEventListener('visibilitychange', () => { if (document.hidden) { stopPlay(); if (ac) kbStop(); } });
 
 function frame() {
@@ -1111,11 +1209,11 @@ function frame() {
 
 window.__vp = { get lesson() { return lesson; }, get audio() { return audio; }, get regions() { return regions; }, get days() { return days; },
   get sel() { return sel; }, set sel(v) { sel = v; updateSecBar(); needDraw = true; }, get play() { return play; }, get viewDay() { return viewDay; },
-  seek, addMarker, addRegion, addToDay, setStage, regionBetweenMarkers, kbPlay, playRegion, finishLesson, wavBytes, view };
+  seek, addMarker, addRegion, addToDay, setStage, regionBetweenMarkers, kbPattern, KB, PATTERNS, backup, restore, playRegion, finishLesson, wavBytes, view };
 
 // ---------- start
 (async () => {
-  buildKeys(); if (lsGet('vpKbd', '0') === '1') toggleKbd(true);
+  setupKbd(); if (lsGet('vpKbd', '0') === '1') toggleKbd(true);
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => { }); } catch (e) { }
   try {
     regions = await dbAll('regions');
