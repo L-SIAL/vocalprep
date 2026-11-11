@@ -26,7 +26,9 @@ They work on the iPad through Claude on the web/app; this repo is the master cop
 - Interface words: **region** (not excerpt/clip), **Repository** (right panel), **Capture** / **Practise**, **Lessons**.
 - Time is real time m:ss. Highest resolution (regions are stored as 24-bit WAV). Attacks 3 ms; envelopes exponential.
 - Colours: parchment (#F2EDE2 / #FBF8F2) with black and muted grey-blacks only.
-- The pitch keyboard: no note names anywhere, keys do not light up.
+- The pitch keyboard: E2–C4, no note names anywhere, keys do not light up. Default pattern **Note** (plays the key
+  touched); patterns live in `PATTERNS` and more will be asked for (e.g. other scales) — add them there.
+- Backups go to Dropbox through the share sheet (Save to Files › Dropbox); the app can't write there by itself.
 - Never handle passwords or secrets. Never delete the user's files; the app only removes its own copies, after asking.
 - Don't change the saved data in a way older versions can't read: add fields, don't rename them.
 
